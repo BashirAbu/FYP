@@ -1,0 +1,29 @@
+Working and analysis of the H - bridge motor driver circuit designed for wheeled mobile robots
+https://ieeexplore.ieee.org/document/5486818
+
+Design and Invention of a Low-Cost Motor Driver for the wheeled Robot
+https://ieeexplore.ieee.org/document/10153382
+
+DC Motor Speed Control Using PWM
+https://www.researchgate.net/publication/338116979_DC_Motor_Speed_Control_Using_PWM
+
+
+Pulse Width Modulation for DC Motor Control Based on LM324
+https://www.researchgate.net/publication/338389782_Pulse_Width_Modulation_for_DC_Motor_Control_Based_on_LM324
+
+
+
+(PID and Circuit)
+A Speed Control of DC Motor with PWM Using Microcontroller in Hardware in Loop
+https://www.researchgate.net/publication/345598097_A_Speed_Control_of_DC_Motor_with_PWM_Using_Microcontroller_in_Hardware_in_Loop
+
+
+Design and implementation of fuzzy PID DC motor control system based on STM32
+https://ieeexplore.ieee.org/document/10141000
+
+Design of Real-time PID tracking controller using Arduino Mega 2560for a permanent magnet DC motor under real disturbances
+https://ieeexplore.ieee.org/document/8613560
+
+
+Speed Control for the DC Motor Based on Feedforward PID Controller
+https://www.researchgate.net/publication/374510373_Speed_Control_for_the_DC_Motor_Based_on_Feedforward_PID_Controller
