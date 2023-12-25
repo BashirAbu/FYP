@@ -1,0 +1,21 @@
+start;
+Initialize System {
+    Setup Microcontroller;
+    Initialize PWM;
+    Setup PID Controller;
+}
+
+Read Input Commands;
+if(Forward Direction Command) {
+    Set PWM for Forward Motion;
+}
+else{
+    Set PWM for Reverse Motion;
+}
+Apply PID Control {
+    Calculate Error;
+    Adjust PWM Based on PID Output;
+}
+Update Motor Speed and Position;
+
+end;
