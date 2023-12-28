@@ -60,8 +60,8 @@ all: main-build
 main-build: Learning.elf secondary-outputs
 
 # Tool invocations
-Learning.elf Learning.map: $(OBJS) $(USER_OBJS) D:\FYP\FYP_1\cubeideprojects\Learning\STM32F103C6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Learning.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\FYP\FYP_1\cubeideprojects\Learning\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Learning.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Learning.elf Learning.map: $(OBJS) $(USER_OBJS) F:\final_year_project\FYP_1\cubeideprojects\Learning\STM32F103C6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Learning.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"F:\final_year_project\FYP_1\cubeideprojects\Learning\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Learning.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

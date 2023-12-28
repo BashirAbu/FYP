@@ -68,7 +68,9 @@ typedef enum MotorDirection
 MotorDirection motorDirection = ClockWise;
 
 uint32_t PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
-uint8_t PWM_countingDutyCycle = 0;
+uint8_t PWM_countingDutyCycle = 125;
+uint8_t changeMotorDirection = 0;
+uint8_t changePWM_DutyCycle = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,30 +89,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	HAL_UART_Receive_IT(&huart1, rx_buffer, 1);
 	if(rx_buffer[0] == '\n')
 	{
-		recieved_buffer[3] = '\0';
+		recieved_buffer[strlen((char*)rx_buffer) - 1] = '\0';
 		if(strcmp((char*)recieved_buffer, COUNTER_CLOCKWISE_TEXT) == 0)
 		{
 			//move clockwise
+			changeMotorDirection = 1;
 			motorDirection = CounterClockWise;
-			PWM_CurrentChannel = PWM_COUNTER_CLOCKWISE_CHANNEL;
-			__HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
-			__HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
-			//delay here
-			HAL_Delay(PWM_DEADTIME_DELAY);
-			__HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, PWM_countingDutyCycle);
 		}
 		else if(strcmp((char*)recieved_buffer, CLOCKWISE_TEXT) == 0)
 		{
 			//Move clockwise
+			changeMotorDirection = 1;
 			motorDirection = ClockWise;
-			PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
-			__HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
-			__HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
-			//delay here
-			HAL_Delay(PWM_DEADTIME_DELAY);
-			__HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, PWM_countingDutyCycle);
 		}
 		else{
+			changePWM_DutyCycle = 1;
 			uint16_t duty_cycle = (uint16_t)atoi((char*) recieved_buffer);
 			sprintf(pwm_msg, "PWM Duty Cycle: %u%%\r\n", duty_cycle);
 			if(duty_cycle > 100)
@@ -118,13 +111,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				sprintf(pwm_msg, "Invalid input!\n");
 			}
 			HAL_UART_Transmit(&huart1, (uint8_t*)pwm_msg, strlen((char*)pwm_msg), HAL_MAX_DELAY);
-			memset(recieved_buffer, 0, 4);
-			memset(pwm_msg, 0, 34);
-			recieved_buffer_index = 0;
 			//Set Period
 			PWM_countingDutyCycle = (uint8_t)(((float)duty_cycle / 100.0f) * (float)(255));
-			__HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
 		}
+		memset(recieved_buffer, 0, RECIEVED_BUFFER_SIZE);
+		memset(pwm_msg, 0, PWM_MSG_SIZE);
+		recieved_buffer_index = 0;
 	}
 	else
 	{
@@ -188,7 +180,43 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  if(changeMotorDirection)
+	  {
+		  switch(motorDirection)
+		  {
+		  case ClockWise:
+		  {
+			  PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
+			  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
+			  __HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
+			  //delay here
+			  HAL_Delay(PWM_DEADTIME_DELAY);
+			  __HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, PWM_countingDutyCycle);
+			  char buff[6];
+			  sprintf(buff, "CW\n\r");
+			  HAL_UART_Transmit(&huart1, (uint8_t*)buff, strlen(buff), HAL_MAX_DELAY);
+		  }break;
+		  case CounterClockWise:
+		  {
+			  PWM_CurrentChannel = PWM_COUNTER_CLOCKWISE_CHANNEL;
+			  __HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
+			  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
+			  //delay here
+			  HAL_Delay(PWM_DEADTIME_DELAY);
+			  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, PWM_countingDutyCycle);
+			  char buff[6];
+			  sprintf(buff, "CCW\n\r");
+			  HAL_UART_Transmit(&huart1, (uint8_t*)buff, strlen(buff), HAL_MAX_DELAY);
+		  }break;
+		  }
+		  changeMotorDirection = 0;
+	  }
+	  if(changePWM_DutyCycle)
+	  {
+		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
 
+		  changePWM_DutyCycle = 0;
+	  }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
