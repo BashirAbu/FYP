@@ -40,17 +40,35 @@
 /* USER CODE BEGIN PM */
 
 /* USER CODE END PM */
-
+#define RX_BUFFER_SIZE 1
+#define RECIEVED_BUFFER_SIZE 4
+#define PWM_MSG_SIZE 34
+#define COUNTER_CLOCKWISE_TEXT "CCW"
+#define CLOCKWISE_TEXT "CW"
+#define PWM_CLOCKWISE_CHANNEL TIM_CHANNEL_1
+#define PWM_COUNTER_CLOCKWISE_CHANNEL TIM_CHANNEL_2
+#define PWM_DEADTIME_DELAY 100
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim2;
 
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-uint8_t rx_buffer[1];
-uint8_t recieved_duty_cycle_buffer[4];
-uint8_t recieved_duty_cyccle_buffer_index = 0;
-char pwm_msg[34];
+uint8_t rx_buffer[RX_BUFFER_SIZE];
+uint8_t recieved_buffer[RECIEVED_BUFFER_SIZE];
+uint8_t recieved_buffer_index = 0;
+char pwm_msg[PWM_MSG_SIZE];
+
+typedef enum MotorDirection
+{
+	ClockWise = 0,
+	CounterClockWise
+}MotorDirection;
+
+MotorDirection motorDirection = ClockWise;
+
+uint32_t PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
+uint8_t PWM_countingDutyCycle = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,26 +87,50 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	HAL_UART_Receive_IT(&huart1, rx_buffer, 1);
 	if(rx_buffer[0] == '\n')
 	{
-		recieved_duty_cycle_buffer[3] = '\0';
-		uint16_t duty_cycle = (uint16_t)atoi((char*) recieved_duty_cycle_buffer);
-		sprintf(pwm_msg, "PWM Duty Cycle: %u%%\r\n", duty_cycle);
-		if(duty_cycle > 100)
+		recieved_buffer[3] = '\0';
+		if(strcmp((char*)recieved_buffer, COUNTER_CLOCKWISE_TEXT) == 0)
 		{
-			sprintf(pwm_msg, "Invalid input!\n");
+			//move clockwise
+			motorDirection = CounterClockWise;
+			PWM_CurrentChannel = PWM_COUNTER_CLOCKWISE_CHANNEL;
+			__HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
+			__HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
+			//delay here
+			HAL_Delay(PWM_DEADTIME_DELAY);
+			__HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, PWM_countingDutyCycle);
 		}
-		HAL_UART_Transmit(&huart1, (uint8_t*)pwm_msg, strlen((char*)pwm_msg), HAL_MAX_DELAY);
-		memset(recieved_duty_cycle_buffer, 0, 4);
-		memset(pwm_msg, 0, 34);
-		recieved_duty_cyccle_buffer_index = 0;
-		//Set Period
-		uint8_t counting_duty_cycle = (uint8_t)(((float)duty_cycle / 100.0f) * (float)(255));
-		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, counting_duty_cycle);
+		else if(strcmp((char*)recieved_buffer, CLOCKWISE_TEXT) == 0)
+		{
+			//Move clockwise
+			motorDirection = ClockWise;
+			PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
+			__HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
+			__HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
+			//delay here
+			HAL_Delay(PWM_DEADTIME_DELAY);
+			__HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, PWM_countingDutyCycle);
+		}
+		else{
+			uint16_t duty_cycle = (uint16_t)atoi((char*) recieved_buffer);
+			sprintf(pwm_msg, "PWM Duty Cycle: %u%%\r\n", duty_cycle);
+			if(duty_cycle > 100)
+			{
+				sprintf(pwm_msg, "Invalid input!\n");
+			}
+			HAL_UART_Transmit(&huart1, (uint8_t*)pwm_msg, strlen((char*)pwm_msg), HAL_MAX_DELAY);
+			memset(recieved_buffer, 0, 4);
+			memset(pwm_msg, 0, 34);
+			recieved_buffer_index = 0;
+			//Set Period
+			PWM_countingDutyCycle = (uint8_t)(((float)duty_cycle / 100.0f) * (float)(255));
+			__HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
+		}
 	}
 	else
 	{
-		recieved_duty_cycle_buffer[recieved_duty_cyccle_buffer_index] = rx_buffer[0];
-		recieved_duty_cyccle_buffer_index++;
-		recieved_duty_cyccle_buffer_index = recieved_duty_cyccle_buffer_index % 4;
+		recieved_buffer[recieved_buffer_index] = rx_buffer[0];
+		recieved_buffer_index++;
+		recieved_buffer_index = recieved_buffer_index % RECIEVED_BUFFER_SIZE;
 	}
 }
 
@@ -137,6 +179,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_UART_Receive_IT(&huart1, rx_buffer, 1);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -237,6 +281,11 @@ static void MX_TIM2_Init(void)
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.Pulse = 0;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
   }
