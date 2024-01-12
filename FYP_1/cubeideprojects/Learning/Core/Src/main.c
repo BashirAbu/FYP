@@ -47,7 +47,7 @@
 #define CLOCKWISE_TEXT "CW"
 #define PWM_CLOCKWISE_CHANNEL TIM_CHANNEL_1
 #define PWM_COUNTER_CLOCKWISE_CHANNEL TIM_CHANNEL_2
-#define PWM_DEADTIME_DELAY 100
+#define PWM_DEADTIME_DELAY 500
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim2;
 
