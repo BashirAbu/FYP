@@ -1,0 +1,3 @@
+test motor after one hour off
+see if diode make discharge time better
+do signal for everything
