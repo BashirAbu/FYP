@@ -1,2 +1,4 @@
 LM7812 in 24V out 12V. at 90% pwm current is 21.70mA
+P = V(I^2) = (24V - 12V) * (21.70mA) = 0.2604Watt.
 LM7805 in 24 out 5V. current is 0.04mA.
+P = V(I^2) = (24V - 5V) * (0.04mA) = 0.76mWatt.
