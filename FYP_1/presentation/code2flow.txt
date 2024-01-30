@@ -1,0 +1,29 @@
+start;
+Initialize HAL Library;
+Initialize System Clock, GPIO, UART, Timer;
+Initialize PWM1 and PWM2;
+Setup UART Receive Interrupt;
+
+Read UART Received Input;
+if(Direction Command) 
+{
+  if(Clockwise Direction){
+    Turn Off PWM2, Turn Off GPIO Pin B13;
+    Wiat for Dead-Time Delay;
+    Turn On PWM1, Turn On GPIO Pin B12;
+  }
+  elseif(Counter-Clockwise Direction)
+  {
+    Turn Off PWM1, Turn Off GPIO Pin B12;
+    Wiat for Dead-Time Delay;
+    Turn On PWM2,Turn On GPIO Pin B13;
+  }
+}
+elseif (Set PWM Duty Cycle Command){
+    Set PWM Duty Cycle;
+}
+else
+{
+  Invalid Input
+}
+end;
