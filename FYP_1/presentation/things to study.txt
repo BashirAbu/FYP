@@ -1,3 +1,4 @@
 -Literature Review:
 in Ayyanathan and Mariyammal[1] paper, understand what is brake and caost states.
 -Do some study on PID stuff (Fuzzy or something)
+-bootstrap
