@@ -1,0 +1,6 @@
+1-Implement PID
+	-see how current can be used here (no idea why need to know current consumption)
+	-see how to find pid parameters
+	-
+2-Maybe use screen and rotatry encoder
+3-PCB design
