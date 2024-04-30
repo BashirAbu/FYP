@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "system_error": "cpp",
+        "qelapsedtimer": "cpp",
+        "qtimer": "cpp",
+        "qopenglfunctions": "cpp"
+    }
+}
