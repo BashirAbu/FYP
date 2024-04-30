@@ -1,8 +1,0 @@
-*.dll
-*.exp
-*.ilk
-*.lib
-*.pdb
-gdextension/bin/
-gdextension/bin/int/
-project/gdextension_bin/

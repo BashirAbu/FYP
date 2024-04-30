@@ -1,9 +1,0 @@
-[configuration]
-
-entry_symbol = "extension_library_init"
-compatibility_minimum = "4.2"
-reloadable = true
-[libraries]
-
-windows.debug.x86_64 = "res://gdextension_bin/gdextension.dll"
-windows.release.x86_64 = "res://gdextension_bin/gdextension.dll"
