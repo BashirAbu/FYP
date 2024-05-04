@@ -69,11 +69,22 @@ typedef enum MotorDirection
 }MotorDirection;
 
 MotorDirection motorDirection = ClockWise;
+int32_t motor_position = 0;
+
 
 uint32_t PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
 uint8_t PWM_countingDutyCycle = 125;
 uint8_t changeMotorDirection = 0;
 uint8_t changePWM_DutyCycle = 0;
+
+typedef struct ConfigData
+{
+    uint32_t speed;
+    int32_t pos;
+    int32_t counts;
+} ConfigData;
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,46 +98,59 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint8_t buffer[sizeof(ConfigData)];
+uint8_t bufferIndex = 0;
+ConfigData data;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	HAL_UART_Receive_IT(&huart1, rx_buffer, 1);
-	if(rx_buffer[0] == '\n')
+	if(bufferIndex == sizeof(ConfigData) - 1)
 	{
-		recieved_buffer[strlen((char*)rx_buffer) - 1] = '\0';
-		if(strcmp((char*)recieved_buffer, COUNTER_CLOCKWISE_TEXT) == 0)
-		{
-			//move clockwise
-			changeMotorDirection = 1;
-			motorDirection = CounterClockWise;
-		}
-		else if(strcmp((char*)recieved_buffer, CLOCKWISE_TEXT) == 0)
-		{
-			//Move clockwise
-			changeMotorDirection = 1;
-			motorDirection = ClockWise;
-		}
-		else{
-			changePWM_DutyCycle = 1;
-			uint16_t duty_cycle = (uint16_t)atoi((char*) recieved_buffer);
-			sprintf(pwm_msg, "PWM Duty Cycle: %u%%\r\n", duty_cycle);
-			if(duty_cycle > 100)
-			{
-				sprintf(pwm_msg, "Invalid input!\n");
-			}
-			HAL_UART_Transmit(&huart1, (uint8_t*)pwm_msg, strlen((char*)pwm_msg), HAL_MAX_DELAY);
-			//Set Period
-			PWM_countingDutyCycle = (uint8_t)(((float)duty_cycle / 100.0f) * (float)(255));
-		}
-		memset(recieved_buffer, 0, RECIEVED_BUFFER_SIZE);
-		memset(pwm_msg, 0, PWM_MSG_SIZE);
-		recieved_buffer_index = 0;
+		bufferIndex = 0;
+		memcpy(&data, buffer, sizeof(buffer));
 	}
 	else
 	{
-		recieved_buffer[recieved_buffer_index] = rx_buffer[0];
-		recieved_buffer_index++;
-		recieved_buffer_index = recieved_buffer_index % RECIEVED_BUFFER_SIZE;
+		buffer[bufferIndex] = rx_buffer[0];
+		bufferIndex++;
 	}
+//	if(rx_buffer[0] == '\n')
+//	{
+//		recieved_buffer[strlen((char*)rx_buffer) - 1] = '\0';
+//		if(strcmp((char*)recieved_buffer, COUNTER_CLOCKWISE_TEXT) == 0)
+//		{
+//			//move clockwise
+//			changeMotorDirection = 1;
+//			motorDirection = CounterClockWise;
+//		}
+//		else if(strcmp((char*)recieved_buffer, CLOCKWISE_TEXT) == 0)
+//		{
+//			//Move clockwise
+//			changeMotorDirection = 1;
+//			motorDirection = ClockWise;
+//		}
+//		else{
+//			changePWM_DutyCycle = 1;
+//			uint16_t duty_cycle = (uint16_t)atoi((char*) recieved_buffer);
+//			sprintf(pwm_msg, "PWM Duty Cycle: %u%%\r\n", duty_cycle);
+//			if(duty_cycle > 100)
+//			{
+//				sprintf(pwm_msg, "Invalid input!\n");
+//			}
+//			HAL_UART_Transmit(&huart1, (uint8_t*)pwm_msg, strlen((char*)pwm_msg), HAL_MAX_DELAY);
+//			//Set Period
+//			PWM_countingDutyCycle = (uint8_t)(((float)duty_cycle / 100.0f) * (float)(255));
+//		}
+//		memset(recieved_buffer, 0, RECIEVED_BUFFER_SIZE);
+//		memset(pwm_msg, 0, PWM_MSG_SIZE);
+//		recieved_buffer_index = 0;
+//	}
+//	else
+//	{
+//		recieved_buffer[recieved_buffer_index] = rx_buffer[0];
+//		recieved_buffer_index++;
+//		recieved_buffer_index = recieved_buffer_index % RECIEVED_BUFFER_SIZE;
+//	}
 }
 
 
@@ -138,7 +162,24 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	  sprintf(buff, "Hi\n\r");;
 	  HAL_UART_Transmit(&huart1, (uint8_t*)buff, strlen(buff), HAL_MAX_DELAY);
   }
+  if(GPIO_Pin == GPIO_PIN_6)
+  {
+	  int32_t inc = 0;
+	  if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_7))
+	  {
+		   inc = 1;
+	  }
+	  else
+	  {
+		  inc = -1;
+	  }
+	  motor_position += inc;
+	  char buff[32];
+	  sprintf(buff, "pos: %ld\n\r", motor_position);
+	  //HAL_UART_Transmit(&huart1, (uint8_t*)buff, strlen(buff), HAL_MAX_DELAY);
+  }
 }
+
 /* USER CODE END 0 */
 
 /**
@@ -392,6 +433,22 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */

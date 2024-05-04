@@ -4,11 +4,10 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/src",
+                "${workspaceFolder}/src/auto_gen",
                 "${workspaceFolder}/third_party/qt/include/",
                 "${workspaceFolder}/third_party/qt/include/QtWidgets",
-                "${workspaceFolder}/third_party/glad/include/",
-                "${workspaceFolder}/third_party/sdl/include/",
-                "${workspaceFolder}/third_party/stb_image/"
+                "${workspaceFolder}/third_party/glad/include/"
             ],
             "defines": [
                 "_DEBUG",
