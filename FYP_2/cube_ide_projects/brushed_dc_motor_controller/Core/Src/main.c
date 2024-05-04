@@ -80,8 +80,8 @@ uint8_t changePWM_DutyCycle = 0;
 typedef struct ConfigData
 {
     uint32_t speed;
-    int32_t pos;
-    int32_t counts;
+    int32_t position;
+    uint32_t encoderCounts;
 } ConfigData;
 
 

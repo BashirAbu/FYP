@@ -6,7 +6,8 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "./build.bat Debug"
+            "command": "./build.bat Debug",
+            "problemMatcher": []
         }
     ]
 }
