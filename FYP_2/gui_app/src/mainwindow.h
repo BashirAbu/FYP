@@ -7,7 +7,7 @@
 #include <Windows.h>
 
 #include "servo_controller.h"
-
+#include <QtSerialPort/QSerialPort>
 
 
 namespace Ui {
