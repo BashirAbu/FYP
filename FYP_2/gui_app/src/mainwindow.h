@@ -34,6 +34,7 @@ private:
     void OnConnectButtonClicked();
     void OnBuadRateLineEditEdited();
     void OnSetButtonClicked();
+    void OnSerialPortHandleError(QSerialPort::SerialPortError error);
 public:
     uint32_t buadRate = 9600;
 private:

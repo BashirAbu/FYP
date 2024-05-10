@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->connectPushbutton, &QPushButton::clicked, this, &MainWindow::OnConnectButtonClicked);
     QObject::connect(ui->setPushbutton, &QPushButton::clicked, this, &MainWindow::OnSetButtonClicked);
     QObject::connect(ui->buadRateLineEdit, &QLineEdit::textEdited, this, &MainWindow::OnBuadRateLineEditEdited);
-
+    QObject::connect(serialPort, &QSerialPort::errorOccurred, this, &MainWindow::OnSerialPortHandleError);
 
     UpdateCOMComboBox();
 }
@@ -41,6 +41,8 @@ bool MainWindow::ConnectCOMPort(QString COMPortName)
 {
     if(!CheckSerialPort(COMPortName))
         return false;
+    connected = true;
+    ui->connectPushbutton->setText("Disconnect");
     serialPort->setPortName(COMPortName);  // Set the COM port. Adjust as necessary for your system.
     serialPort->setBaudRate(buadRate);
     serialPort->setDataBits(QSerialPort::Data8);
@@ -60,6 +62,8 @@ void MainWindow::DisconnectCOMPort()
     connected = false;
     serialPort->close();
     ui->connectPushbutton->setText("Connect");
+    ui->COMComboBox->setCurrentIndex(-1);
+    ui->COMComboBox->clear();
 }
 
 bool MainWindow::CheckSerialPort(QString COMPortName)
@@ -87,8 +91,6 @@ void MainWindow::OnConnectButtonClicked()
     else
     {
         //Connect button is pressed
-        connected = true;
-        ui->connectPushbutton->setText("Disconnect");
         if(!ConnectCOMPort(ui->COMComboBox->currentText()))
         {
             ConsoleLogError("Failed to connect to COM Port:" + ui->COMComboBox->currentText() + "\n");
@@ -125,6 +127,14 @@ void MainWindow::OnSetButtonClicked()
         ConsoleLogDebug("Data written to port successfully");
     }
     serialPort->flush(); // Ensure all data is sent
+}
+
+void MainWindow::OnSerialPortHandleError(QSerialPort::SerialPortError error)
+{
+    if (error != QSerialPort::NoError) {
+        ConsoleLogError("Serial port error or device disconnected:" + serialPort->errorString());
+        DisconnectCOMPort();
+    }
 }
 
 void MainWindow::UpdateCOMComboBox()
