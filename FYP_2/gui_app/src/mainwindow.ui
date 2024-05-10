@@ -145,6 +145,16 @@
      <string>Set</string>
     </property>
    </widget>
+   <widget class="QPlainTextEdit" name="console">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>280</y>
+      <width>551</width>
+      <height>201</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

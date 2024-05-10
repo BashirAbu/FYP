@@ -2,12 +2,17 @@
 #include "ui_mainwindow.h"
 #include <QtWidgets/QListWidget>
 #include <QtCore/QtCore>
+#include <QtSerialPort/QSerialPortInfo>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     setWindowTitle("Servo Controller");
+
+    serialPort = new QSerialPort(this);
+
     ui->buadRateLineEdit->setText("9600");
     ui->speedLineEdit->setText("0");
     ui->positionLineEdit->setText("0");
@@ -15,6 +20,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->buadRateLineEdit->setValidator(new QIntValidator(ui->buadRateLineEdit));
     ui->speedLineEdit->setValidator(new QIntValidator(ui->speedLineEdit));
     ui->positionLineEdit->setValidator(new QIntValidator(ui->positionLineEdit));
+
+    ui->console->setReadOnly(true);
+
     QObject::connect(ui->updatePushbutton, &QPushButton::clicked, this, &MainWindow::OnUpdateButtonClicked);
     QObject::connect(ui->connectPushbutton, &QPushButton::clicked, this, &MainWindow::OnConnectButtonClicked);
     QObject::connect(ui->setPushbutton, &QPushButton::clicked, this, &MainWindow::OnSetButtonClicked);
@@ -31,38 +39,41 @@ MainWindow::~MainWindow()
 
 bool MainWindow::ConnectCOMPort(QString COMPortName)
 {
-    QString portName = "\\\\.\\" + COMPortName;
-    hSerial = CreateFileA(portName.toLatin1().data(), // Replace COM3 with your COM port
-        GENERIC_READ | GENERIC_WRITE,
-        0,
-        NULL,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL);
-
-    if (hSerial == INVALID_HANDLE_VALUE) {
-        qCritical() << "Error opening serial port\n";
-        return false; // or appropriate error handling
-    }
-
-    DCB dcbSerialParams = {0};
-    dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
-
-    if (!GetCommState(hSerial, &dcbSerialParams)) {
-        qCritical() << "Error getting serial port state\n";
+    if(!CheckSerialPort(COMPortName))
         return false;
-    }
+    serialPort->setPortName(COMPortName);  // Set the COM port. Adjust as necessary for your system.
+    serialPort->setBaudRate(buadRate);
+    serialPort->setDataBits(QSerialPort::Data8);
+    serialPort->setParity(QSerialPort::NoParity);
+    serialPort->setStopBits(QSerialPort::OneStop);
+    serialPort->setFlowControl(QSerialPort::NoFlowControl);
 
-    dcbSerialParams.BaudRate = buadRate; // Set baud rate to 9600, you can change as needed
-    dcbSerialParams.ByteSize = 8;        // 8 data bits
-    dcbSerialParams.StopBits = ONESTOPBIT;
-    dcbSerialParams.Parity   = NOPARITY;
-
-    if (!SetCommState(hSerial, &dcbSerialParams)) {
-        qCritical()<< "Error setting serial port state\n";
+    if (!serialPort->open(QIODevice::ReadWrite)) {
+        ConsoleLogError("Error: Unable to open the port!");
         return false;
     }
     return true;
+}
+
+void MainWindow::DisconnectCOMPort()
+{
+    connected = false;
+    serialPort->close();
+    ui->connectPushbutton->setText("Connect");
+}
+
+bool MainWindow::CheckSerialPort(QString COMPortName)
+{
+    QVector<QString> ports = GetCOMPorts();
+
+    for(QString port : ports)
+    {
+        if(port == COMPortName)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -71,9 +82,7 @@ void MainWindow::OnConnectButtonClicked()
     if(connected)
     {
         //Disconnect button is pressed
-        connected = false;
-        CloseHandle(hSerial);
-        ui->connectPushbutton->setText("Connect");
+        DisconnectCOMPort();
     }
     else
     {
@@ -82,7 +91,7 @@ void MainWindow::OnConnectButtonClicked()
         ui->connectPushbutton->setText("Disconnect");
         if(!ConnectCOMPort(ui->COMComboBox->currentText()))
         {
-            qCritical() << "Failed to connect to COM Port:" << ui->COMComboBox->currentText() << "\n";
+            ConsoleLogError("Failed to connect to COM Port:" + ui->COMComboBox->currentText() + "\n");
         }
     }
 }
@@ -95,17 +104,27 @@ void MainWindow::OnBuadRateLineEditEdited()
 void MainWindow::OnSetButtonClicked()
 {
     if(!connected)
+    {
+        ConsoleLogError("Serial port is not connected!");
         return;
+    }
     
     servoController.SetSpeed(ui->speedLineEdit->text().toUInt());
     servoController.SetPosition(ui->positionLineEdit->text().toInt());
 
 
-    DWORD bytesWritten;
-    if (!WriteFile(hSerial, &servoController.data, sizeof(servoController.data), &bytesWritten, NULL)) 
-    {
-        qCritical() << "Failed to send data!\n";
+    QByteArray buffer;
+    buffer.append(reinterpret_cast<const char*>(&servoController.data), sizeof(servoController.data));
+
+    qint64 bytesWritten = serialPort->write(buffer);
+    if (bytesWritten == -1) {
+        ConsoleLogDebug("Failed to write the data to port");
+    } else if (bytesWritten != sizeof(servoController.data)) {
+        ConsoleLogDebug("Failed to write all the data to port");
+    } else {
+        ConsoleLogDebug("Data written to port successfully");
     }
+    serialPort->flush(); // Ensure all data is sent
 }
 
 void MainWindow::UpdateCOMComboBox()
@@ -128,36 +147,44 @@ QVector<QString> MainWindow::GetCOMPorts()
 {
     QVector<QString> result;
 
-    HKEY hKey;
-    char portName[256];
-    DWORD portNameLen;
-    DWORD type;
-    int index = 0;
+    const QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
+    ConsoleLogDebug("Total number of ports available: " + QString::number(ports.count()));
 
-    // Open the "HARDWARE\DEVICEMAP\SERIALCOMM" key in the registry
-    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM", 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
-        // Enumerate all values under this key
-        while (TRUE) {
-            portNameLen = sizeof(portName);
-            // Read each entry in the registry key
-            if (RegEnumValueA(hKey, index, portName, &portNameLen, NULL, &type, NULL, NULL) != ERROR_SUCCESS) {
-                break;
-            }
-            if (type == REG_SZ) {  // Ensure it's a string type (REG_SZ)
-                char portValue[256];
-                DWORD portValueLen = sizeof(portValue);
-                // Get the name of the port
-                if (RegQueryValueExA(hKey, portName, NULL, NULL, (LPBYTE)portValue, &portValueLen) == ERROR_SUCCESS) {
-                    result.append(portValue);
-                }
-            }
-            index++;
-        }
-        RegCloseKey(hKey);
-    } else {
-        fprintf(stderr, "Failed to open registry key\n");
+    for (const QSerialPortInfo &port : ports) {
+        result.append(port.portName());
     }
 
     return result;
+}
+
+void MainWindow::ConsoleLogDebug(QString msg)
+{
+    QTextCursor cursor(ui->console->document());
+    cursor.movePosition(QTextCursor::End);
+    QTextCharFormat textFormat;
+    textFormat.setForeground(Qt::green);
+    cursor.mergeCharFormat(textFormat);
+    cursor.insertText(msg);
+    cursor.insertText("\n"); // Move to the next line after appending text
+
+    
+    cursor = ui->console->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    ui->console->setTextCursor(cursor);
+}
+
+void MainWindow::ConsoleLogError(QString msg)
+{
+    QTextCursor cursor(ui->console->document());
+    cursor.movePosition(QTextCursor::End);
+    QTextCharFormat textFormat;
+    textFormat.setForeground(Qt::red);
+    cursor.mergeCharFormat(textFormat);
+    cursor.insertText(msg);
+    cursor.insertText("\n"); // Move to the next line after appending text
+
+    cursor = ui->console->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    ui->console->setTextCursor(cursor);
 }
 

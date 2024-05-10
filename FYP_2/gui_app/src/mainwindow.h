@@ -4,8 +4,7 @@
 #include <QMainWindow>
 #include <QtCore/QVector>
 #include <QtCore/QString>
-#include <Windows.h>
-
+#include <QtSerialPort/QSerialPort>
 #include "servo_controller.h"
 #include <QtSerialPort/QSerialPort>
 
@@ -24,8 +23,13 @@ public:
 private:
     QVector<QString> GetCOMPorts();
 
+    void ConsoleLogDebug(QString msg);
+    void ConsoleLogError(QString msg);
+    
     void UpdateCOMComboBox();
     bool ConnectCOMPort(QString COMPortName);
+    void DisconnectCOMPort();
+    bool CheckSerialPort(QString COMPortName);
     void OnUpdateButtonClicked();
     void OnConnectButtonClicked();
     void OnBuadRateLineEditEdited();
@@ -35,7 +39,7 @@ public:
 private:
     Ui::MainWindow *ui;
     bool connected = false;
-    HANDLE hSerial;
+    QSerialPort* serialPort;
     ServoController servoController;
 };
 

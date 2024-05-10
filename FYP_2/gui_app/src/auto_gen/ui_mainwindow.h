@@ -16,6 +16,7 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
+#include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QWidget>
 
@@ -36,6 +37,7 @@ public:
     QLineEdit *positionLineEdit;
     QPushButton *updatePushbutton;
     QPushButton *setPushbutton;
+    QPlainTextEdit *console;
     QMenuBar *menubar;
 
     void setupUi(QMainWindow *MainWindow)
@@ -78,6 +80,9 @@ public:
         setPushbutton = new QPushButton(centralwidget);
         setPushbutton->setObjectName("setPushbutton");
         setPushbutton->setGeometry(QRect(80, 120, 80, 24));
+        console = new QPlainTextEdit(centralwidget);
+        console->setObjectName("console");
+        console->setGeometry(QRect(60, 280, 551, 201));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
