@@ -1,1 +1,1 @@
-#include "qhelpsearchengine.h"
+#include "qhelpsearchengine.h" // IWYU pragma: export

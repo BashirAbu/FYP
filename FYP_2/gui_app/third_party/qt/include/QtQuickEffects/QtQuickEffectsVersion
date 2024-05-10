@@ -1,1 +1,1 @@
-#include "qtquickeffectsversion.h"
+#include "qtquickeffectsversion.h" // IWYU pragma: export

@@ -1,1 +1,1 @@
-#include "qopenglversionprofile.h"
+#include "qopenglversionprofile.h" // IWYU pragma: export

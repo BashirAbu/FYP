@@ -1,1 +1,1 @@
-#include "qtquicklayoutsversion.h"
+#include "qtquicklayoutsversion.h" // IWYU pragma: export

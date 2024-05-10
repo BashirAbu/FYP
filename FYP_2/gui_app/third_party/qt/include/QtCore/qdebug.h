@@ -11,13 +11,16 @@
 
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qtextstream.h>
+#include <QtCore/qtypes.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qcontiguouscache.h>
 #include <QtCore/qsharedpointer.h>
 
 // all these have already been included by various headers above, but don't rely on indirect includes:
+#include <chrono>
 #include <list>
 #include <map>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -67,6 +70,9 @@ class QT6_ONLY(Q_CORE_EXPORT) QDebug : public QIODeviceBase
     QT7_ONLY(Q_CORE_EXPORT) void putUcs4(uint ucs4);
     QT7_ONLY(Q_CORE_EXPORT) void putString(const QChar *begin, size_t length);
     QT7_ONLY(Q_CORE_EXPORT) void putByteArray(const char *begin, size_t length, Latin1Content content);
+    QT7_ONLY(Q_CORE_EXPORT) void putTimeUnit(qint64 num, qint64 den);
+    QT7_ONLY(Q_CORE_EXPORT) void putInt128(const void *i);
+    QT7_ONLY(Q_CORE_EXPORT) void putUInt128(const void *i);
 public:
     explicit QDebug(QIODevice *device) : stream(new Stream(device)) {}
     explicit QDebug(QString *string) : stream(new Stream(string)) {}
@@ -90,6 +96,9 @@ public:
 
     bool autoInsertSpaces() const { return stream->space; }
     void setAutoInsertSpaces(bool b) { stream->space = b; }
+
+    [[nodiscard]] bool quoteStrings() const noexcept { return !stream->noQuotes; }
+    void setQuoteStrings(bool b) { stream->noQuotes = !b; }
 
     inline QDebug &quote() { stream->noQuotes = false; return *this; }
     inline QDebug &noquote() { stream->noQuotes = true; return *this; }
@@ -121,6 +130,7 @@ public:
     inline QDebug &operator<<(QByteArrayView t) { putByteArray(t.constData(), t.size(), ContainsBinary); return maybeSpace(); }
     inline QDebug &operator<<(const void * t) { stream->ts << t; return maybeSpace(); }
     inline QDebug &operator<<(std::nullptr_t) { stream->ts << "(nullptr)"; return maybeSpace(); }
+    inline QDebug &operator<<(std::nullopt_t) { stream->ts << "nullopt"; return maybeSpace(); }
     inline QDebug &operator<<(QTextStreamFunction f) {
         stream->ts << f;
         return *this;
@@ -189,6 +199,29 @@ public:
     { return *this << QString::fromUcs4(s.data(), s.size()); }
 #endif // !Q_QDOC
 
+    template <typename Rep, typename Period>
+    QDebug &operator<<(std::chrono::duration<Rep, Period> duration)
+    {
+        stream->ts << duration.count();
+        putTimeUnit(Period::num, Period::den);
+        return maybeSpace();
+    }
+
+#ifdef QT_SUPPORTS_INT128
+private:
+    // Constrained templates so they only match q(u)int128 without conversions.
+    // Also keeps these operators out of the ABI.
+    template <typename T>
+    using if_qint128 = std::enable_if_t<std::is_same_v<T, qint128>, bool>;
+    template <typename T>
+    using if_quint128 = std::enable_if_t<std::is_same_v<T, quint128>, bool>;
+public:
+    template <typename T, if_qint128<T> = true>
+    QDebug &operator<<(T i128) { putInt128(&i128); return maybeSpace(); }
+    template <typename T, if_quint128<T> = true>
+    QDebug &operator<<(T u128) { putUInt128(&u128); return maybeSpace(); }
+#endif // QT_SUPPORTS_INT128
+
     template <typename T>
     static QString toString(T &&object)
     {
@@ -202,10 +235,12 @@ public:
 Q_DECLARE_SHARED(QDebug)
 
 class QDebugStateSaverPrivate;
-class Q_CORE_EXPORT QDebugStateSaver
+class QDebugStateSaver
 {
 public:
+    Q_NODISCARD_CTOR Q_CORE_EXPORT
     QDebugStateSaver(QDebug &dbg);
+    Q_CORE_EXPORT
     ~QDebugStateSaver();
 private:
     Q_DISABLE_COPY(QDebugStateSaver)
@@ -346,6 +381,17 @@ inline QDebugIfHasDebugStreamContainer<QMultiHash<Key, T>, Key, T> operator<<(QD
     return QtPrivate::printAssociativeContainer(debug, "QMultiHash", hash);
 }
 
+template <class T>
+inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::optional<T> &opt)
+{
+    const QDebugStateSaver saver(debug);
+    if (!opt)
+        debug.nospace() << std::nullopt;
+    else
+        debug.nospace() << "std::optional(" << *opt << ')';
+    return debug;
+}
+
 template <class T1, class T2>
 inline QDebugIfHasDebugStream<T1, T2> operator<<(QDebug debug, const std::pair<T1, T2> &pair)
 {
@@ -407,9 +453,6 @@ QDebug operator<<(QDebug debug, const QMultiHash<Key, T> &hash);
 
 template <typename T>
 QDebug operator<<(QDebug debug, const QSet<T> &set);
-
-template <class T1, class T2>
-QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair);
 
 template <class T1, class T2>
 QDebug operator<<(QDebug debug, const std::pair<T1, T2> &pair);
@@ -528,7 +571,7 @@ inline QDebug operator<<(QDebug debug, QKeyCombination combination)
     return debug;
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_DARWIN
 
 // We provide QDebug stream operators for commonly used Core Foundation
 // and Core Graphics types, as well as NSObject. Additional CF/CG types
@@ -607,7 +650,7 @@ QT_FOR_EACH_MUTABLE_CORE_GRAPHICS_TYPE(QT_FORWARD_DECLARE_QDEBUG_OPERATOR_FOR_CF
 #undef QT_FORWARD_DECLARE_CG_TYPE
 #undef QT_FORWARD_DECLARE_MUTABLE_CG_TYPE
 
-#endif // Q_OS_MAC
+#endif // Q_OS_DARWIN
 
 QT_END_NAMESPACE
 

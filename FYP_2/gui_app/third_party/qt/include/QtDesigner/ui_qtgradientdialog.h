@@ -8,7 +8,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qtgradientdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -42,7 +42,7 @@ public:
         vboxLayout->setObjectName("vboxLayout");
         gradientEditor = new QtGradientEditor(QtGradientDialog);
         gradientEditor->setObjectName("gradientEditor");
-        QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::MinimumExpanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(gradientEditor->sizePolicy().hasHeightForWidth());

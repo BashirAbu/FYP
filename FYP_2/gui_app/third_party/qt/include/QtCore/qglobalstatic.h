@@ -1,12 +1,12 @@
 // Copyright (C) 2021 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtCore/qglobal.h>
-
 #ifndef QGLOBALSTATIC_H
 #define QGLOBALSTATIC_H
 
+#include <QtCore/qassert.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qtclasshelpermacros.h>
 
 #include <atomic>           // for bootstrapped (no thread) builds
 #include <type_traits>
@@ -40,9 +40,10 @@ template <typename QGS> union Holder
 
     ~Holder()
     {
+        // import changes to *pointer() by other threads before running ~PlainType():
+        std::atomic_thread_fence(std::memory_order_acquire);
         pointer()->~PlainType();
-        std::atomic_thread_fence(std::memory_order_acquire); // avoid mixing stores to guard and *pointer()
-        guard.storeRelaxed(QtGlobalStatic::Destroyed);
+        guard.storeRelease(QtGlobalStatic::Destroyed);
     }
 
     PlainType *pointer() noexcept
@@ -74,13 +75,13 @@ template <typename Holder> struct QGlobalStatic
     }
     Type *operator->()
     {
-        Q_ASSERT_X(!isDestroyed(), "Q_GLOBAL_STATIC",
+        Q_ASSERT_X(!isDestroyed(), Q_FUNC_INFO,
                    "The global static was used after being destroyed");
         return instance();
     }
     Type &operator*()
     {
-        Q_ASSERT_X(!isDestroyed(), "Q_GLOBAL_STATIC",
+        Q_ASSERT_X(!isDestroyed(), Q_FUNC_INFO,
                    "The global static was used after being destroyed");
         return *instance();
     }

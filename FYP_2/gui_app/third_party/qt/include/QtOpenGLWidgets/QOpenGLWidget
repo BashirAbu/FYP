@@ -1,1 +1,1 @@
-#include "qopenglwidget.h"
+#include "qopenglwidget.h" // IWYU pragma: export

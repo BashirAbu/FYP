@@ -18,14 +18,47 @@ class QPointer
 {
     static_assert(!std::is_pointer<T>::value, "QPointer's template type must not be a pointer type");
 
+    template <typename X>
+    using if_convertible = std::enable_if_t<std::is_convertible_v<X*, T*>, bool>;
+    template <typename X>
+    friend class QPointer;
+
     using QObjectType =
         typename std::conditional<std::is_const<T>::value, const QObject, QObject>::type;
     QWeakPointer<QObjectType> wp;
 public:
-    QPointer() = default;
+    Q_NODISCARD_CTOR
+    QPointer() noexcept = default;
+    Q_NODISCARD_CTOR
+    constexpr QPointer(std::nullptr_t) noexcept : QPointer{} {}
+    Q_WEAK_OVERLOAD
+    Q_NODISCARD_CTOR
     inline QPointer(T *p) : wp(p, true) { }
     // compiler-generated copy/move ctor/assignment operators are fine!
     // compiler-generated dtor is fine!
+
+    template <typename X, if_convertible<X> = true>
+    Q_NODISCARD_CTOR
+    QPointer(QPointer<X> &&other) noexcept
+        : wp(std::exchange(other.wp, nullptr).internalData(), true) {}
+    template <typename X, if_convertible<X> = true>
+    Q_NODISCARD_CTOR
+    QPointer(const QPointer<X> &other) noexcept
+        : wp(other.wp.internalData(), true) {}
+
+    template <typename X, if_convertible<X> = true>
+    QPointer &operator=(const QPointer<X> &other) noexcept
+    {
+        QPointer(other).swap(*this);
+        return *this;
+    }
+
+    template <typename X, if_convertible<X> = true>
+    QPointer &operator=(QPointer<X> &&other) noexcept
+    {
+        QPointer(std::move(other)).swap(*this);
+        return *this;
+    }
 
 #ifdef Q_QDOC
     // Stop qdoc from complaining about missing function
@@ -37,27 +70,30 @@ public:
     inline QPointer<T> &operator=(T* p)
     { wp.assign(static_cast<QObjectType*>(p)); return *this; }
 
-    inline T* data() const
+    T* data() const noexcept
     { return static_cast<T*>(wp.internalData()); }
-    inline T* get() const
+    T* get() const noexcept
     { return data(); }
-    inline T* operator->() const
+    T* operator->() const noexcept
     { return data(); }
-    inline T& operator*() const
+    T& operator*() const noexcept
     { return *data(); }
-    inline operator T*() const
+    operator T*() const noexcept
     { return data(); }
 
-    inline bool isNull() const
+    bool isNull() const noexcept
     { return wp.isNull(); }
 
-    inline void clear()
+    void clear() noexcept
     { wp.clear(); }
 
+    friend void swap(QPointer &lhs, QPointer &rhs) noexcept
+    { lhs.swap(rhs); }
+
 #define DECLARE_COMPARE_SET(T1, A1, T2, A2) \
-    friend bool operator==(T1, T2) \
+    friend bool operator==(T1, T2) noexcept \
     { return A1 == A2; } \
-    friend bool operator!=(T1, T2) \
+    friend bool operator!=(T1, T2) noexcept \
     { return A1 != A2; }
 
 #define DECLARE_TEMPLATE_COMPARE_SET(T1, A1, T2, A2) \
@@ -85,10 +121,6 @@ qPointerFromVariant(const QVariant &variant)
     const auto wp = QtSharedPointer::weakPointerFromVariant_internal(variant);
     return QPointer<T>{qobject_cast<T*>(QtPrivate::EnableInternalData::internalData(wp))};
 }
-
-template <class T>
-inline void swap(QPointer<T> &p1, QPointer<T> &p2) noexcept
-{ p1.swap(p2); }
 
 QT_END_NAMESPACE
 

@@ -1,1 +1,1 @@
-#include "abstractresourcebrowser.h"
+#include "abstractresourcebrowser.h" // IWYU pragma: export

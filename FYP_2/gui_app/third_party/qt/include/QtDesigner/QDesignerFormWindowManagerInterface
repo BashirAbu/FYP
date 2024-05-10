@@ -1,1 +1,1 @@
-#include "abstractformwindowmanager.h"
+#include "abstractformwindowmanager.h" // IWYU pragma: export

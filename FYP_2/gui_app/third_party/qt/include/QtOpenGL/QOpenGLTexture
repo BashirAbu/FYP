@@ -1,1 +1,1 @@
-#include "qopengltexture.h"
+#include "qopengltexture.h" // IWYU pragma: export

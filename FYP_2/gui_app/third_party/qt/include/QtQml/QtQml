@@ -4,6 +4,7 @@
 #include "qtqmlglobal.h"
 #include "qtqmlcompilerglobal.h"
 #include "qjsengine.h"
+#include "qjslist.h"
 #include "qjsmanagedvalue.h"
 #include "qjsnumbercoercion.h"
 #include "qjsprimitivevalue.h"

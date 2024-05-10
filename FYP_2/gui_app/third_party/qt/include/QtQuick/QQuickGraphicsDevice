@@ -1,1 +1,1 @@
-#include "qquickgraphicsdevice.h"
+#include "qquickgraphicsdevice.h" // IWYU pragma: export

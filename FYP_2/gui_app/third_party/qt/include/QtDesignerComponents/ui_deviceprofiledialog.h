@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'deviceprofiledialog.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -43,14 +43,14 @@ public:
     QLineEdit *m_nameLineEdit;
     QDialogButtonBox *buttonBox;
 
-    void setupUi(QDialog *dialog)
+    void setupUi(QDialog *DeviceProfileDialog)
     {
-        if (dialog->objectName().isEmpty())
-            dialog->setObjectName("dialog");
-        dialog->resize(348, 209);
-        verticalLayout = new QVBoxLayout(dialog);
+        if (DeviceProfileDialog->objectName().isEmpty())
+            DeviceProfileDialog->setObjectName("DeviceProfileDialog");
+        DeviceProfileDialog->resize(348, 209);
+        verticalLayout = new QVBoxLayout(DeviceProfileDialog);
         verticalLayout->setObjectName("verticalLayout");
-        SystemSettingsWidget = new QWidget(dialog);
+        SystemSettingsWidget = new QWidget(DeviceProfileDialog);
         SystemSettingsWidget->setObjectName("SystemSettingsWidget");
         formLayout = new QFormLayout(SystemSettingsWidget);
         formLayout->setObjectName("formLayout");
@@ -108,7 +108,7 @@ public:
 
         verticalLayout->addWidget(SystemSettingsWidget);
 
-        buttonBox = new QDialogButtonBox(dialog);
+        buttonBox = new QDialogButtonBox(DeviceProfileDialog);
         buttonBox->setObjectName("buttonBox");
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::Open|QDialogButtonBox::Save);
@@ -125,19 +125,19 @@ public:
         QWidget::setTabOrder(m_systemFontSizeCombo, m_styleCombo);
         QWidget::setTabOrder(m_styleCombo, buttonBox);
 
-        retranslateUi(dialog);
+        retranslateUi(DeviceProfileDialog);
 
-        QMetaObject::connectSlotsByName(dialog);
+        QMetaObject::connectSlotsByName(DeviceProfileDialog);
     } // setupUi
 
-    void retranslateUi(QDialog *dialog)
+    void retranslateUi(QDialog *DeviceProfileDialog)
     {
         m_systemFontFamilyLabel->setText(QCoreApplication::translate("DeviceProfileDialog", "&Family", nullptr));
         m_systemFontSizeLabel->setText(QCoreApplication::translate("DeviceProfileDialog", "&Point Size", nullptr));
         m_styleLabel->setText(QCoreApplication::translate("DeviceProfileDialog", "Style", nullptr));
         m_systemDPILabel->setText(QCoreApplication::translate("DeviceProfileDialog", "Device DPI", nullptr));
         m_nameLabel->setText(QCoreApplication::translate("DeviceProfileDialog", "Name", nullptr));
-        (void)dialog;
+        (void)DeviceProfileDialog;
     } // retranslateUi
 
 };

@@ -163,9 +163,59 @@ public:
         }
     }
 
+    explicit QJSPrimitiveValue(QMetaType type) noexcept
+    {
+        switch (type.id()) {
+        case QMetaType::UnknownType:
+            d = QJSPrimitiveUndefined();
+            break;
+        case QMetaType::Nullptr:
+            d = QJSPrimitiveNull();
+            break;
+        case QMetaType::Bool:
+            d = false;
+            break;
+        case QMetaType::Int:
+            d = 0;
+            break;
+        case QMetaType::Double:
+            d = 0.0;
+            break;
+        case QMetaType::QString:
+            d = QString();
+            break;
+        default:
+            // Unsupported. Remains undefined.
+            break;
+        }
+    }
+
     explicit QJSPrimitiveValue(const QVariant &variant) noexcept
         : QJSPrimitiveValue(variant.metaType(), variant.data())
     {
+    }
+
+    constexpr QMetaType metaType() const  { return d.metaType(); }
+    constexpr void *data() { return d.data(); }
+    constexpr const void *data() const { return d.data(); }
+    constexpr const void *constData() const { return d.data(); }
+
+    template<Type type>
+    QJSPrimitiveValue to() const {
+        if constexpr (type == Undefined)
+            return QJSPrimitiveUndefined();
+        if constexpr (type == Null)
+            return QJSPrimitiveNull();
+        if constexpr (type == Boolean)
+            return toBoolean();
+        if constexpr (type == Integer)
+            return toInteger();
+        if constexpr (type == Double)
+            return toDouble();
+        if constexpr (type == String)
+            return toString();
+
+        Q_UNREACHABLE_RETURN(QJSPrimitiveUndefined());
     }
 
     constexpr bool toBoolean() const
@@ -180,10 +230,14 @@ public:
             return !QJSNumberCoercion::equals(v, 0) && !std::isnan(v);
         }
         case String:    return !asString().isEmpty();
-        default:        Q_UNREACHABLE();
         }
 
+        // GCC 8.x does not treat __builtin_unreachable() as constexpr
+    #if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+        Q_UNREACHABLE_RETURN(false);
+    #else
         return false;
+    #endif
     }
 
     constexpr int toInteger() const
@@ -195,10 +249,14 @@ public:
         case Integer:   return asInteger();
         case Double:    return QJSNumberCoercion::toInteger(asDouble());
         case String:    return fromString(asString()).toInteger();
-        default:        Q_UNREACHABLE();
         }
 
+        // GCC 8.x does not treat __builtin_unreachable() as constexpr
+    #if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+        Q_UNREACHABLE_RETURN(0);
+    #else
         return 0;
+    #endif
     }
 
     constexpr double toDouble() const
@@ -210,10 +268,14 @@ public:
         case Integer:   return asInteger();
         case Double:    return asDouble();
         case String:    return fromString(asString()).toDouble();
-        default:        Q_UNREACHABLE();
         }
 
+        // GCC 8.x does not treat __builtin_unreachable() as constexpr
+    #if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+        Q_UNREACHABLE_RETURN({});
+    #else
         return {};
+    #endif
     }
 
     QString toString() const
@@ -749,7 +811,82 @@ private:
             else if constexpr (std::is_same_v<T, QString>)
                 return getString();
 
+            // GCC 8.x does not treat __builtin_unreachable() as constexpr
+        #if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
             Q_UNREACHABLE_RETURN(T());
+        #else
+            return T();
+        #endif
+        }
+
+        constexpr QMetaType metaType() const noexcept {
+            switch (m_type) {
+            case Undefined:
+                return QMetaType();
+            case Null:
+                return QMetaType::fromType<std::nullptr_t>();
+            case Boolean:
+                return QMetaType::fromType<bool>();
+            case Integer:
+                return QMetaType::fromType<int>();
+            case Double:
+                return QMetaType::fromType<double>();
+            case String:
+                return QMetaType::fromType<QString>();
+            }
+
+            // GCC 8.x does not treat __builtin_unreachable() as constexpr
+        #if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+            Q_UNREACHABLE_RETURN(QMetaType());
+        #else
+            return QMetaType();
+        #endif
+        }
+
+        constexpr void *data() noexcept {
+            switch (m_type) {
+            case Undefined:
+            case Null:
+                return nullptr;
+            case Boolean:
+                return &m_bool;
+            case Integer:
+                return &m_int;
+            case Double:
+                return &m_double;
+            case String:
+                return &m_string;
+            }
+
+            // GCC 8.x does not treat __builtin_unreachable() as constexpr
+        #if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+            Q_UNREACHABLE_RETURN(nullptr);
+        #else
+            return nullptr;
+        #endif
+        }
+
+        constexpr const void *data() const noexcept {
+            switch (m_type) {
+            case Undefined:
+            case Null:
+                return nullptr;
+            case Boolean:
+                return &m_bool;
+            case Integer:
+                return &m_int;
+            case Double:
+                return &m_double;
+            case String:
+                return &m_string;
+            }
+
+            // GCC 8.x does not treat __builtin_unreachable() as constexpr
+        #if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+            Q_UNREACHABLE_RETURN(nullptr);
+        #else
+            return nullptr;
+        #endif
         }
 
     private:
@@ -770,10 +907,14 @@ private:
                 return true;
             case String:
                 return false;
-            default:
-                Q_UNREACHABLE();
             }
+
+            // GCC 8.x does not treat __builtin_unreachable() as constexpr
+        #if !defined(Q_CC_GNU_ONLY) || (Q_CC_GNU >= 900)
+            Q_UNREACHABLE_RETURN(false);
+        #else
             return false;
+        #endif
         }
 
         union {

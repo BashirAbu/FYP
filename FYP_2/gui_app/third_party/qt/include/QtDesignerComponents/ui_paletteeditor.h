@@ -8,7 +8,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'paletteeditor.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -48,7 +48,7 @@ public:
     QRadioButton *detailsRadio;
     QRadioButton *computeRadio;
     QLabel *label;
-    QGroupBox *GroupBox126;
+    QGroupBox *previewGroupBox;
     QGridLayout *gridLayout1;
     QRadioButton *disabledRadio;
     QRadioButton *inactiveRadio;
@@ -61,7 +61,7 @@ public:
         if (qdesigner_internal__PaletteEditor->objectName().isEmpty())
             qdesigner_internal__PaletteEditor->setObjectName("qdesigner_internal__PaletteEditor");
         qdesigner_internal__PaletteEditor->resize(918, 599);
-        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(qdesigner_internal__PaletteEditor->sizePolicy().hasHeightForWidth());
@@ -80,7 +80,7 @@ public:
         gridLayout->setContentsMargins(9, 9, 9, 9);
         buildButton = new QtColorButton(advancedBox);
         buildButton->setObjectName("buildButton");
-        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Ignored);
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Ignored);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(buildButton->sizePolicy().hasHeightForWidth());
@@ -113,34 +113,34 @@ public:
 
         horizontalLayout->addWidget(advancedBox);
 
-        GroupBox126 = new QGroupBox(qdesigner_internal__PaletteEditor);
-        GroupBox126->setObjectName("GroupBox126");
-        QSizePolicy sizePolicy2(QSizePolicy::Preferred, QSizePolicy::Expanding);
+        previewGroupBox = new QGroupBox(qdesigner_internal__PaletteEditor);
+        previewGroupBox->setObjectName("previewGroupBox");
+        QSizePolicy sizePolicy2(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Expanding);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
-        sizePolicy2.setHeightForWidth(GroupBox126->sizePolicy().hasHeightForWidth());
-        GroupBox126->setSizePolicy(sizePolicy2);
-        gridLayout1 = new QGridLayout(GroupBox126);
+        sizePolicy2.setHeightForWidth(previewGroupBox->sizePolicy().hasHeightForWidth());
+        previewGroupBox->setSizePolicy(sizePolicy2);
+        gridLayout1 = new QGridLayout(previewGroupBox);
         gridLayout1->setSpacing(6);
         gridLayout1->setObjectName("gridLayout1");
         gridLayout1->setContentsMargins(8, 8, 8, 8);
-        disabledRadio = new QRadioButton(GroupBox126);
+        disabledRadio = new QRadioButton(previewGroupBox);
         disabledRadio->setObjectName("disabledRadio");
 
         gridLayout1->addWidget(disabledRadio, 0, 2, 1, 1);
 
-        inactiveRadio = new QRadioButton(GroupBox126);
+        inactiveRadio = new QRadioButton(previewGroupBox);
         inactiveRadio->setObjectName("inactiveRadio");
 
         gridLayout1->addWidget(inactiveRadio, 0, 1, 1, 1);
 
-        activeRadio = new QRadioButton(GroupBox126);
+        activeRadio = new QRadioButton(previewGroupBox);
         activeRadio->setObjectName("activeRadio");
         activeRadio->setChecked(true);
 
         gridLayout1->addWidget(activeRadio, 0, 0, 1, 1);
 
-        previewFrame = new qdesigner_internal::PreviewFrame(GroupBox126);
+        previewFrame = new qdesigner_internal::PreviewFrame(previewGroupBox);
         previewFrame->setObjectName("previewFrame");
         sizePolicy.setHeightForWidth(previewFrame->sizePolicy().hasHeightForWidth());
         previewFrame->setSizePolicy(sizePolicy);
@@ -148,7 +148,7 @@ public:
         gridLayout1->addWidget(previewFrame, 1, 0, 1, 3);
 
 
-        horizontalLayout->addWidget(GroupBox126);
+        horizontalLayout->addWidget(previewGroupBox);
 
 
         verticalLayout->addLayout(horizontalLayout);
@@ -176,7 +176,7 @@ public:
         detailsRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Show Details", nullptr));
         computeRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Compute Details", nullptr));
         label->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Quick", nullptr));
-        GroupBox126->setTitle(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Preview", nullptr));
+        previewGroupBox->setTitle(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Preview", nullptr));
         disabledRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Disabled", nullptr));
         inactiveRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Inactive", nullptr));
         activeRadio->setText(QCoreApplication::translate("qdesigner_internal::PaletteEditor", "Active", nullptr));

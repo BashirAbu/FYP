@@ -1,1 +1,1 @@
-#include "qopenglvertexarrayobject.h"
+#include "qopenglvertexarrayobject.h" // IWYU pragma: export

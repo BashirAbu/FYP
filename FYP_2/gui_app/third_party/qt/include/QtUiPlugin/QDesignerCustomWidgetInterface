@@ -1,1 +1,1 @@
-#include "customwidget.h"
+#include "customwidget.h" // IWYU pragma: export

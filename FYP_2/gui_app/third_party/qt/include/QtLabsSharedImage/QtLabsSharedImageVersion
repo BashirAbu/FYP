@@ -1,1 +1,1 @@
-#include "qtlabssharedimageversion.h"
+#include "qtlabssharedimageversion.h" // IWYU pragma: export

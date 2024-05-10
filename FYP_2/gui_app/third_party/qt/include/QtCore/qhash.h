@@ -531,11 +531,29 @@ struct Data
         }
     };
 
+    static auto allocateSpans(size_t numBuckets)
+    {
+        struct R {
+            Span *spans;
+            size_t nSpans;
+        };
+
+        constexpr qptrdiff MaxSpanCount = (std::numeric_limits<qptrdiff>::max)() / sizeof(Span);
+        constexpr size_t MaxBucketCount = MaxSpanCount << SpanConstants::SpanShift;
+
+        if (numBuckets > MaxBucketCount) {
+            Q_CHECK_PTR(false);
+            Q_UNREACHABLE();    // no exceptions and no assertions -> no error reporting
+        }
+
+        size_t nSpans = numBuckets >> SpanConstants::SpanShift;
+        return R{ new Span[nSpans], nSpans };
+    }
+
     Data(size_t reserve = 0)
     {
         numBuckets = GrowthPolicy::bucketsForCapacity(reserve);
-        size_t nSpans = numBuckets >> SpanConstants::SpanShift;
-        spans = new Span[nSpans];
+        spans = allocateSpans(numBuckets).spans;
         seed = QHashSeed::globalSeed();
     }
 
@@ -557,15 +575,14 @@ struct Data
 
     Data(const Data &other) : size(other.size), numBuckets(other.numBuckets), seed(other.seed)
     {
-        size_t nSpans = numBuckets >> SpanConstants::SpanShift;
-        spans = new Span[nSpans];
-        reallocationHelper(other, nSpans, false);
+        auto r = allocateSpans(numBuckets);
+        spans = r.spans;
+        reallocationHelper(other, r.nSpans, false);
     }
     Data(const Data &other, size_t reserved) : size(other.size), seed(other.seed)
     {
         numBuckets = GrowthPolicy::bucketsForCapacity(qMax(size, reserved));
-        size_t nSpans = numBuckets >> SpanConstants::SpanShift;
-        spans = new Span[nSpans];
+        spans = allocateSpans(numBuckets).spans;
         size_t otherNSpans = other.numBuckets >> SpanConstants::SpanShift;
         reallocationHelper(other, otherNSpans, true);
     }
@@ -623,8 +640,7 @@ struct Data
 
         Span *oldSpans = spans;
         size_t oldBucketCount = numBuckets;
-        size_t nSpans = newBucketCount >> SpanConstants::SpanShift;
-        spans = new Span[nSpans];
+        spans = allocateSpans(newBucketCount).spans;
         numBuckets = newBucketCount;
         size_t oldNSpans = oldBucketCount >> SpanConstants::SpanShift;
 
@@ -683,22 +699,10 @@ struct Data
 
     Node *findNode(const Key &key) const noexcept
     {
-        Q_ASSERT(numBuckets > 0);
-        size_t hash = QHashPrivate::calculateHash(key, seed);
-        Bucket bucket(this, GrowthPolicy::bucketForHash(numBuckets, hash));
-        // loop over the buckets until we find the entry we search for
-        // or an empty slot, in which case we know the entry doesn't exist
-        while (true) {
-            size_t offset = bucket.offset();
-            if (offset == SpanConstants::UnusedEntry) {
-                return nullptr;
-            } else {
-                Node &n = bucket.nodeAtOffset(offset);
-                if (qHashEquals(n.key, key))
-                    return &n;
-            }
-            bucket.advanceWrapped(this);
-        }
+        auto bucket = findBucket(key);
+        if (bucket.isUnused())
+            return nullptr;
+        return bucket.node();
     }
 
     struct InsertionResult
@@ -1230,22 +1234,22 @@ public:
         return i;
     }
 
-    QPair<iterator, iterator> equal_range(const Key &key)
+    std::pair<iterator, iterator> equal_range(const Key &key)
     {
         auto first = find(key);
         auto second = first;
         if (second != iterator())
             ++second;
-        return qMakePair(first, second);
+        return {first, second};
     }
 
-    QPair<const_iterator, const_iterator> equal_range(const Key &key) const noexcept
+    std::pair<const_iterator, const_iterator> equal_range(const Key &key) const noexcept
     {
         auto first = find(key);
         auto second = first;
         if (second != iterator())
             ++second;
-        return qMakePair(first, second);
+        return {first, second};
     }
 
     typedef iterator Iterator;
@@ -2121,26 +2125,26 @@ public:
         return *this;
     }
 
-    QPair<iterator, iterator> equal_range(const Key &key)
+    std::pair<iterator, iterator> equal_range(const Key &key)
     {
         const auto copy = isDetached() ? QMultiHash() : *this; // keep 'key' alive across the detach
         detach();
         auto pair = std::as_const(*this).equal_range(key);
-        return qMakePair(iterator(pair.first.i), iterator(pair.second.i));
+        return {iterator(pair.first.i), iterator(pair.second.i)};
     }
 
-    QPair<const_iterator, const_iterator> equal_range(const Key &key) const noexcept
+    std::pair<const_iterator, const_iterator> equal_range(const Key &key) const noexcept
     {
         if (!d)
-            return qMakePair(end(), end());
+            return {end(), end()};
 
         auto bucket = d->findBucket(key);
         if (bucket.isUnused())
-            return qMakePair(end(), end());
+            return {end(), end()};
         auto it = bucket.toIterator(d);
         auto end = it;
         ++end;
-        return qMakePair(const_iterator(it), const_iterator(end));
+        return {const_iterator(it), const_iterator(end)};
     }
 
 private:

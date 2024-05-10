@@ -1,1 +1,1 @@
-#include "abstractlanguage.h"
+#include "abstractlanguage.h" // IWYU pragma: export

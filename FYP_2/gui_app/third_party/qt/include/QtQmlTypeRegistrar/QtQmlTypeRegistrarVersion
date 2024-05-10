@@ -1,1 +1,1 @@
-#include "qtqmltyperegistrarversion.h"
+#include "qtqmltyperegistrarversion.h" // IWYU pragma: export

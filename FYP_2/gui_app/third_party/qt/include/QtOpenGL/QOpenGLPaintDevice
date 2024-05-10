@@ -1,1 +1,1 @@
-#include "qopenglpaintdevice.h"
+#include "qopenglpaintdevice.h" // IWYU pragma: export

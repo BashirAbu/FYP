@@ -33,6 +33,10 @@ class QQuickPalette;
 class QQuickRenderTarget;
 class QQuickGraphicsDevice;
 class QQuickGraphicsConfiguration;
+class QRhi;
+class QRhiSwapChain;
+class QRhiTexture;
+class QSGTextNode;
 
 class Q_QUICK_EXPORT QQuickWindow : public QWindow
 {
@@ -78,7 +82,8 @@ public:
 
     enum TextRenderType {
         QtTextRendering,
-        NativeTextRendering
+        NativeTextRendering,
+        CurveTextRendering
     };
     Q_ENUM(TextRenderType)
 
@@ -115,6 +120,7 @@ public:
     // Scene graph specific functions
     QSGTexture *createTextureFromImage(const QImage &image) const;
     QSGTexture *createTextureFromImage(const QImage &image, CreateTextureOptions options) const;
+    QSGTexture *createTextureFromRhiTexture(QRhiTexture *texture, CreateTextureOptions options = {}) const;
 
     void setColor(const QColor &color);
     QColor color() const;
@@ -151,9 +157,13 @@ public:
     QSGRectangleNode *createRectangleNode() const;
     QSGImageNode *createImageNode() const;
     QSGNinePatchNode *createNinePatchNode() const;
+    QSGTextNode *createTextNode() const;
 
     static TextRenderType textRenderType();
     static void setTextRenderType(TextRenderType renderType);
+
+    QRhi *rhi() const;
+    QRhiSwapChain *swapChain() const;
 
 Q_SIGNALS:
     void frameSwapped();
@@ -220,7 +230,6 @@ private Q_SLOTS:
     void cleanupSceneGraph();
     void physicalDpiChanged();
     void handleScreenChanged(QScreen *screen);
-    void setTransientParent_helper(QQuickWindow *window);
     void runJobsAfterSwap();
     void handleApplicationStateChanged(Qt::ApplicationState state);
     void handleFontDatabaseChanged();
@@ -234,6 +243,7 @@ private:
 #endif
 
     friend class QQuickItem;
+    friend class QQuickItemPrivate;
     friend class QQuickWidget;
     friend class QQuickRenderControl;
     friend class QQuickAnimatorController;

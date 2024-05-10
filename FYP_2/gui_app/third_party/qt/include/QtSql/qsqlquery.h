@@ -69,6 +69,9 @@ public:
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
 
+    void setPositionalBindingEnabled(bool enable);
+    bool isPositionalBindingEnabled() const;
+
     bool seek(int i, bool relative = false);
     bool next();
     bool previous();
@@ -89,6 +92,8 @@ public:
     QVariant boundValue(const QString& placeholder) const;
     QVariant boundValue(int pos) const;
     QVariantList boundValues() const;
+    QStringList boundValueNames() const;
+    QString boundValueName(int pos) const;
     QString executedQuery() const;
     QVariant lastInsertId() const;
     void finish();

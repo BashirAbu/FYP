@@ -1,1 +1,1 @@
-#include "extrainfo.h"
+#include "extrainfo.h" // IWYU pragma: export

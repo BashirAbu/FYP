@@ -1,1 +1,1 @@
-#include "qopenglfunctions_3_3_compatibility.h"
+#include "qopenglfunctions_3_3_compatibility.h" // IWYU pragma: export

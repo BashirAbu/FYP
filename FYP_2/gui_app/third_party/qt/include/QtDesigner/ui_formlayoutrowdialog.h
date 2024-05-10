@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'formlayoutrowdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -77,7 +77,7 @@ public:
 
         fieldClassComboBox = new QComboBox(FormLayoutRowDialog);
         fieldClassComboBox->setObjectName("fieldClassComboBox");
-        QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(fieldClassComboBox->sizePolicy().hasHeightForWidth());
@@ -125,8 +125,8 @@ public:
 
         line = new QFrame(FormLayoutRowDialog);
         line->setObjectName("line");
-        line->setFrameShape(QFrame::HLine);
-        line->setFrameShadow(QFrame::Sunken);
+        line->setFrameShape(QFrame::Shape::HLine);
+        line->setFrameShadow(QFrame::Shadow::Sunken);
 
         verticalLayout->addWidget(line);
 

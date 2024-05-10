@@ -1,1 +1,1 @@
-#include "abstractpromotioninterface.h"
+#include "abstractpromotioninterface.h" // IWYU pragma: export

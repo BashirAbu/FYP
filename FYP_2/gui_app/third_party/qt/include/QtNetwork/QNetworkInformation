@@ -1,1 +1,1 @@
-#include "qnetworkinformation.h"
+#include "qnetworkinformation.h" // IWYU pragma: export

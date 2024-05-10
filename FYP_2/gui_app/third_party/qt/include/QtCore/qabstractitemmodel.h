@@ -178,17 +178,17 @@ public:
     QPersistentModelIndex(const QModelIndex &index);
     QPersistentModelIndex(const QPersistentModelIndex &other);
     ~QPersistentModelIndex();
-    bool operator<(const QPersistentModelIndex &other) const;
-    bool operator==(const QPersistentModelIndex &other) const;
-    inline bool operator!=(const QPersistentModelIndex &other) const
+    bool operator<(const QPersistentModelIndex &other) const noexcept;
+    bool operator==(const QPersistentModelIndex &other) const noexcept;
+    inline bool operator!=(const QPersistentModelIndex &other) const noexcept
     { return !operator==(other); }
     QPersistentModelIndex &operator=(const QPersistentModelIndex &other);
     inline QPersistentModelIndex(QPersistentModelIndex &&other) noexcept
         : d(std::exchange(other.d, nullptr)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPersistentModelIndex)
     void swap(QPersistentModelIndex &other) noexcept { qt_ptr_swap(d, other.d); }
-    bool operator==(const QModelIndex &other) const;
-    bool operator!=(const QModelIndex &other) const;
+    bool operator==(const QModelIndex &other) const noexcept;
+    bool operator!=(const QModelIndex &other) const noexcept;
     QPersistentModelIndex &operator=(const QModelIndex &other);
     operator QModelIndex() const;
     int row() const;
@@ -499,7 +499,13 @@ inline Qt::ItemFlags QModelIndex::flags() const
 { return m ? m->flags(*this) : Qt::ItemFlags(); }
 
 inline size_t qHash(const QModelIndex &index, size_t seed = 0) noexcept
-{ return size_t((size_t(index.row()) << 4) + size_t(index.column()) + index.internalId()) ^ seed; }
+{
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
+    return qHashMulti(seed, index.row(), index.column(), index.internalId());
+#else
+    return size_t((size_t(index.row()) << 4) + size_t(index.column()) + index.internalId()) ^ seed;
+#endif
+}
 
 QT_END_NAMESPACE
 

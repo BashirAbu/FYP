@@ -1,1 +1,1 @@
-#include "qtquicktestutilsversion.h"
+#include "qtquicktestutilsversion.h" // IWYU pragma: export

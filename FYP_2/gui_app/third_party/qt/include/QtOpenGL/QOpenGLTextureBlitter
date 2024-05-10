@@ -1,1 +1,1 @@
-#include "qopengltextureblitter.h"
+#include "qopengltextureblitter.h" // IWYU pragma: export

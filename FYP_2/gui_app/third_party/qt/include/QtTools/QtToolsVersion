@@ -1,1 +1,1 @@
-#include "qttoolsversion.h"
+#include "qttoolsversion.h" // IWYU pragma: export

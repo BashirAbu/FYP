@@ -1,1 +1,1 @@
-#include "qopenglshaderprogram.h"
+#include "qopenglshaderprogram.h" // IWYU pragma: export

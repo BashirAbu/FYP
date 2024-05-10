@@ -8,7 +8,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'stringlisteditor.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -108,7 +108,7 @@ public:
 
         hboxLayout->addWidget(deleteButton);
 
-        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 
@@ -143,7 +143,7 @@ public:
 #endif
         vboxLayout2->setContentsMargins(0, 0, 0, 0);
         vboxLayout2->setObjectName("vboxLayout2");
-        spacerItem1 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem1 = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout2->addItem(spacerItem1);
 
@@ -157,7 +157,7 @@ public:
 
         vboxLayout2->addWidget(downButton);
 
-        spacerItem2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem2 = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout2->addItem(spacerItem2);
 

@@ -113,7 +113,9 @@ public:
     bool isDir(const QModelIndex &index) const;
     qint64 size(const QModelIndex &index) const;
     QString type(const QModelIndex &index) const;
+
     QDateTime lastModified(const QModelIndex &index) const;
+    QDateTime lastModified(const QModelIndex &index, const QTimeZone &tz) const;
 
     QModelIndex mkdir(const QModelIndex &parent, const QString &name);
     bool rmdir(const QModelIndex &index);
@@ -136,7 +138,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_performDelayedSort())
     Q_PRIVATE_SLOT(d_func(),
                    void _q_fileSystemChanged(const QString &path,
-                                             const QList<QPair<QString, QFileInfo>> &))
+                                             const QList<std::pair<QString, QFileInfo>> &))
     Q_PRIVATE_SLOT(d_func(), void _q_resolvedName(const QString &fileName, const QString &resolvedName))
 
     friend class QFileDialogPrivate;

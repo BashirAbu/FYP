@@ -1,1 +1,1 @@
-#include "abstractactioneditor.h"
+#include "abstractactioneditor.h" // IWYU pragma: export

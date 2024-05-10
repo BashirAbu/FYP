@@ -1,1 +1,1 @@
-#include "dynamicpropertysheet.h"
+#include "dynamicpropertysheet.h" // IWYU pragma: export

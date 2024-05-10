@@ -1,1 +1,1 @@
-#include "qopengltimerquery.h"
+#include "qopengltimerquery.h" // IWYU pragma: export

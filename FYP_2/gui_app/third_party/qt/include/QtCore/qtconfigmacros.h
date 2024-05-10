@@ -7,15 +7,10 @@
 #if 0
 #  pragma qt_sync_stop_processing
 #endif
-#ifdef QT_BOOTSTRAPPED
-// qconfig-bootstrapped.h is not supposed to be a part of the synced header files. So we find it by
-// the include path specified for Bootstrap library in the source tree instead of the build tree as
-// it's done for regular header files.
-#include "qconfig-bootstrapped.h"
-#else
-#include <QtCore/qconfig.h>
-#include <QtCore/qtcore-config.h>
-#endif
+
+#include <QtCore/qtconfiginclude.h>
+
+#include <assert.h>
 
 /*
    The Qt modules' export macros.
@@ -48,6 +43,9 @@
    No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
    for Qt's internal unit tests. If you want slower loading times and more
    symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
+
+   \note After adding Q_AUTOTEST_EXPORT to a method, you'll need to wrap any unittests
+   that will use that method in "#ifdef QT_BUILD_INTERNAL".
 */
 #if defined(QT_BUILD_INTERNAL) && defined(QT_BUILDING_QT) && defined(QT_SHARED)
 #    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
@@ -65,7 +63,7 @@
         1: The feature is available
 */
 #define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
-#define QT_REQUIRE_CONFIG(feature) Q_STATIC_ASSERT_X(QT_FEATURE_##feature == 1, "Required feature " #feature " for file " __FILE__ " not available.")
+#define QT_REQUIRE_CONFIG(feature) static_assert(QT_FEATURE_##feature == 1, "Required feature " #feature " for file " __FILE__ " not available.")
 
 /* moc compats (signals/slots) */
 #ifndef QT_MOC_COMPAT

@@ -1,1 +1,1 @@
-#include "qdesigner_components.h"
+#include "qdesigner_components.h" // IWYU pragma: export

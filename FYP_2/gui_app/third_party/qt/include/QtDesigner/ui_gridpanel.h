@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'gridpanel.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -57,7 +57,7 @@ public:
         gridLayout->setObjectName("gridLayout");
         m_visibleCheckBox = new QCheckBox(m_gridGroupBox);
         m_visibleCheckBox->setObjectName("m_visibleCheckBox");
-        QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(m_visibleCheckBox->sizePolicy().hasHeightForWidth());
@@ -91,7 +91,7 @@ public:
 
         hboxLayout->addWidget(m_resetButton);
 
-        spacerItem = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(20, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 

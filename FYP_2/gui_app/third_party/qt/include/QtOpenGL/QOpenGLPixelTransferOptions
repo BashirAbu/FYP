@@ -1,1 +1,1 @@
-#include "qopenglpixeltransferoptions.h"
+#include "qopenglpixeltransferoptions.h" // IWYU pragma: export

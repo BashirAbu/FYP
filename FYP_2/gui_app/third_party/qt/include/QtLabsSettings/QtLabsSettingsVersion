@@ -1,1 +1,1 @@
-#include "qtlabssettingsversion.h"
+#include "qtlabssettingsversion.h" // IWYU pragma: export

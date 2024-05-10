@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qtresourceeditordialog.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -65,7 +65,7 @@ public:
         qrcLayout->setContentsMargins(0, 0, 0, 0);
         qrcFileList = new QListWidget(qrcLayoutWidget);
         qrcFileList->setObjectName("qrcFileList");
-        QSizePolicy sizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(qrcFileList->sizePolicy().hasHeightForWidth());
@@ -83,7 +83,7 @@ public:
 
         qrcLayout->addWidget(removeQrcButton, 1, 2, 1, 1);
 
-        spacerItem = new QSpacerItem(21, 20, QSizePolicy::Ignored, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(21, 20, QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Minimum);
 
         qrcLayout->addItem(spacerItem, 1, 3, 1, 1);
 
@@ -118,7 +118,7 @@ public:
 
         resourceLayout->addWidget(removeResourceButton, 1, 2, 1, 1);
 
-        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         resourceLayout->addItem(horizontalSpacer, 1, 3, 1, 1);
 

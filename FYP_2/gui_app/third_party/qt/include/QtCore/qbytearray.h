@@ -15,7 +15,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 
 #include <string>
 #include <iterator>
@@ -40,6 +39,8 @@ namespace emscripten {
 }
 #endif
 
+class tst_QByteArray;
+
 QT_BEGIN_NAMESPACE
 
 class QString;
@@ -60,6 +61,11 @@ private:
 
     DataPointer d;
     static const char _empty;
+
+    friend class ::tst_QByteArray;
+
+    template <typename InputIterator>
+    using if_input_iterator = QtPrivate::IfIsInputIterator<InputIterator>;
 public:
 
     enum Base64Option {
@@ -145,20 +151,69 @@ public:
 
     inline int compare(QByteArrayView a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
-    [[nodiscard]] QByteArray left(qsizetype len) const;
-    [[nodiscard]] QByteArray right(qsizetype len) const;
-    [[nodiscard]] QByteArray mid(qsizetype index, qsizetype len = -1) const;
+#if QT_CORE_REMOVED_SINCE(6, 7)
+    QByteArray left(qsizetype len) const;
+    QByteArray right(qsizetype len) const;
+    QByteArray mid(qsizetype index, qsizetype len = -1) const;
+    QByteArray first(qsizetype n) const;
+    QByteArray last(qsizetype n) const;
+    QByteArray sliced(qsizetype pos) const;
+    QByteArray sliced(qsizetype pos, qsizetype n) const;
+    QByteArray chopped(qsizetype len) const;
+#else
+    [[nodiscard]] QByteArray left(qsizetype n) const &
+    {
+        if (n >= size())
+            return *this;
+        return first(qMax(n, 0));
+    }
+    [[nodiscard]] QByteArray left(qsizetype n) &&
+    {
+        if (n >= size())
+            return std::move(*this);
+        return std::move(*this).first(qMax(n, 0));
+    }
+    [[nodiscard]] QByteArray right(qsizetype n) const &
+    {
+        if (n >= size())
+            return *this;
+        return last(qMax(n, 0));
+    }
+    [[nodiscard]] QByteArray right(qsizetype n) &&
+    {
+        if (n >= size())
+            return std::move(*this);
+        return std::move(*this).last(qMax(n, 0));
+    }
+    [[nodiscard]] QByteArray mid(qsizetype index, qsizetype len = -1) const &;
+    [[nodiscard]] QByteArray mid(qsizetype index, qsizetype len = -1) &&;
 
-    [[nodiscard]] QByteArray first(qsizetype n) const
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QByteArray(data(), n); }
-    [[nodiscard]] QByteArray last(qsizetype n) const
-    { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); return QByteArray(data() + size() - n, n); }
-    [[nodiscard]] QByteArray sliced(qsizetype pos) const
-    { Q_ASSERT(pos >= 0); Q_ASSERT(pos <= size()); return QByteArray(data() + pos, size() - pos); }
-    [[nodiscard]] QByteArray sliced(qsizetype pos, qsizetype n) const
-    { Q_ASSERT(pos >= 0); Q_ASSERT(n >= 0); Q_ASSERT(size_t(pos) + size_t(n) <= size_t(size())); return QByteArray(data() + pos, n); }
-    [[nodiscard]] QByteArray chopped(qsizetype len) const
-    { Q_ASSERT(len >= 0); Q_ASSERT(len <= size()); return first(size() - len); }
+    [[nodiscard]] QByteArray first(qsizetype n) const &
+    { verify(0, n); return sliced(0, n); }
+    [[nodiscard]] QByteArray last(qsizetype n) const &
+    { verify(0, n); return sliced(size() - n, n); }
+    [[nodiscard]] QByteArray sliced(qsizetype pos) const &
+    { verify(pos, 0); return sliced(pos, size() - pos); }
+    [[nodiscard]] QByteArray sliced(qsizetype pos, qsizetype n) const &
+    { verify(pos, n); return QByteArray(d.data() + pos, n); }
+    [[nodiscard]] QByteArray chopped(qsizetype len) const &
+    { verify(0, len); return sliced(0, size() - len); }
+
+    [[nodiscard]] QByteArray first(qsizetype n) &&
+    {
+        verify(0, n);
+        resize(n);      // may detach and allocate memory
+        return std::move(*this);
+    }
+    [[nodiscard]] QByteArray last(qsizetype n) &&
+    { verify(0, n); return sliced_helper(*this, size() - n, n); }
+    [[nodiscard]] QByteArray sliced(qsizetype pos) &&
+    { verify(pos, 0); return sliced_helper(*this, pos, size() - pos); }
+    [[nodiscard]] QByteArray sliced(qsizetype pos, qsizetype n) &&
+    { verify(pos, n); return sliced_helper(*this, pos, n); }
+    [[nodiscard]] QByteArray chopped(qsizetype len) &&
+    { verify(0, len); return std::move(*this).first(size() - len); }
+#endif
 
     bool startsWith(QByteArrayView bv) const
     { return QtPrivate::startsWith(qToByteArrayViewIgnoringNull(*this), bv); }
@@ -227,6 +282,20 @@ public:
     QByteArray &append(QByteArrayView a)
     { return insert(size(), a); }
 
+    QByteArray &assign(QByteArrayView v);
+    QByteArray &assign(qsizetype n, char c)
+    {
+        Q_ASSERT(n >= 0);
+        return fill(c, n);
+    }
+    template <typename InputIterator, if_input_iterator<InputIterator> = true>
+    QByteArray &assign(InputIterator first, InputIterator last)
+    {
+        d.assign(first, last);
+        d.data()[d.size] = '\0';
+        return *this;
+    }
+
     QByteArray &insert(qsizetype i, QByteArrayView data);
     inline QByteArray &insert(qsizetype i, const char *s)
     { return insert(i, QByteArrayView(s)); }
@@ -247,7 +316,7 @@ public:
     template <typename Predicate>
     QByteArray &removeIf(Predicate pred)
     {
-        QtPrivate::sequential_erase_if(*this, pred);
+        removeIf_helper(pred);
         return *this;
     }
 
@@ -408,8 +477,8 @@ public:
     const_iterator begin() const noexcept { return data(); }
     const_iterator cbegin() const noexcept { return begin(); }
     const_iterator constBegin() const noexcept { return begin(); }
-    iterator end() { return data() + size(); }
-    const_iterator end() const noexcept { return data() + size(); }
+    iterator end() { return begin() + size(); }
+    const_iterator end() const noexcept { return begin() + size(); }
     const_iterator cend() const noexcept { return end(); }
     const_iterator constEnd() const noexcept { return end(); }
     reverse_iterator rbegin() { return reverse_iterator(end()); }
@@ -459,6 +528,7 @@ public:
     QT_CORE_INLINE_SINCE(6, 4)
     bool isNull() const noexcept;
 
+    inline const DataPointer &data_ptr() const { return d; }
     inline DataPointer &data_ptr() { return d; }
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     explicit inline QByteArray(const DataPointer &dd) : d(dd) {}
@@ -470,6 +540,16 @@ private:
     void reallocGrowData(qsizetype n);
     void expand(qsizetype i);
 
+    Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
+                                          [[maybe_unused]] qsizetype n = 1) const
+    {
+        Q_ASSERT(pos >= 0);
+        Q_ASSERT(pos <= d.size);
+        Q_ASSERT(n >= 0);
+        Q_ASSERT(n <= d.size - pos);
+    }
+
+    static QByteArray sliced_helper(QByteArray &a, qsizetype pos, qsizetype n);
     static QByteArray toLower_helper(const QByteArray &a);
     static QByteArray toLower_helper(QByteArray &a);
     static QByteArray toUpper_helper(const QByteArray &a);
@@ -478,9 +558,20 @@ private:
     static QByteArray trimmed_helper(QByteArray &a);
     static QByteArray simplified_helper(const QByteArray &a);
     static QByteArray simplified_helper(QByteArray &a);
+    template <typename Predicate>
+    qsizetype removeIf_helper(Predicate pred)
+    {
+        const qsizetype result = d->eraseIf(pred);
+        if (result > 0)
+            d.data()[d.size] = '\0';
+        return result;
+    }
 
     friend class QString;
     friend Q_CORE_EXPORT QByteArray qUncompress(const uchar *data, qsizetype nbytes);
+
+    template <typename T> friend qsizetype erase(QByteArray &ba, const T &t);
+    template <typename Predicate> friend qsizetype erase_if(QByteArray &ba, Predicate pred);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
@@ -489,9 +580,9 @@ inline constexpr QByteArray::QByteArray() noexcept {}
 inline QByteArray::~QByteArray() {}
 
 inline char QByteArray::at(qsizetype i) const
-{ Q_ASSERT(size_t(i) < size_t(size())); return d.data()[i]; }
+{ verify(i, 1); return d.data()[i]; }
 inline char QByteArray::operator[](qsizetype i) const
-{ Q_ASSERT(size_t(i) < size_t(size())); return d.data()[i]; }
+{ verify(i, 1); return d.data()[i]; }
 
 #ifndef QT_NO_CAST_FROM_BYTEARRAY
 inline QByteArray::operator const char *() const
@@ -541,7 +632,7 @@ inline void QByteArray::squeeze()
 }
 
 inline char &QByteArray::operator[](qsizetype i)
-{ Q_ASSERT(i >= 0 && i < size()); return data()[i]; }
+{ verify(i, 1); return data()[i]; }
 inline char &QByteArray::front() { return operator[](0); }
 inline char &QByteArray::back() { return operator[](size() - 1); }
 inline QByteArray &QByteArray::append(qsizetype n, char ch)
@@ -662,13 +753,13 @@ Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray::FromBase64Resu
 template <typename T>
 qsizetype erase(QByteArray &ba, const T &t)
 {
-    return QtPrivate::sequential_erase(ba, t);
+    return ba.removeIf_helper([&t](const auto &e) { return t == e; });
 }
 
 template <typename Predicate>
 qsizetype erase_if(QByteArray &ba, Predicate pred)
 {
-    return QtPrivate::sequential_erase_if(ba, pred);
+    return ba.removeIf_helper(pred);
 }
 
 //
@@ -683,7 +774,7 @@ namespace Qt {
 inline namespace Literals {
 inline namespace StringLiterals {
 
-inline QByteArray operator"" _ba(const char *str, size_t size) noexcept
+inline QByteArray operator""_ba(const char *str, size_t size) noexcept
 {
     return QByteArray(QByteArrayData(nullptr, const_cast<char *>(str), qsizetype(size)));
 }
@@ -696,7 +787,7 @@ inline namespace QtLiterals {
 #if QT_DEPRECATED_SINCE(6, 8)
 
 QT_DEPRECATED_VERSION_X_6_8("Use _ba from Qt::StringLiterals namespace instead.")
-inline QByteArray operator"" _qba(const char *str, size_t size) noexcept
+inline QByteArray operator""_qba(const char *str, size_t size) noexcept
 {
     return Qt::StringLiterals::operator""_ba(str, size);
 }

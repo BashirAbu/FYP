@@ -8,7 +8,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'orderdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -81,7 +81,7 @@ public:
 
         vboxLayout1->addWidget(downButton);
 
-        spacerItem = new QSpacerItem(20, 99, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(20, 99, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         vboxLayout1->addItem(spacerItem);
 

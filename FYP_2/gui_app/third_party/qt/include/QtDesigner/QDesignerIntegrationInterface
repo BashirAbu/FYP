@@ -1,1 +1,1 @@
-#include "abstractintegration.h"
+#include "abstractintegration.h" // IWYU pragma: export

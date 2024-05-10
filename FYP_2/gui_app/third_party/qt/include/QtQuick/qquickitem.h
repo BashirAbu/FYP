@@ -102,6 +102,8 @@ class Q_QUICK_EXPORT QQuickItem : public QObject, public QQmlParserStatus
     Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged FINAL)
     Q_PROPERTY(bool activeFocusOnTab READ activeFocusOnTab WRITE setActiveFocusOnTab NOTIFY activeFocusOnTabChanged FINAL REVISION(2, 1))
 
+    Q_PROPERTY(Qt::FocusPolicy focusPolicy READ focusPolicy WRITE setFocusPolicy NOTIFY focusPolicyChanged REVISION(6, 7))
+
     Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin NOTIFY transformOriginChanged)
@@ -270,6 +272,9 @@ public:
     bool isFocusScope() const;
     QQuickItem *scopedFocusItem() const;
 
+    Qt::FocusPolicy focusPolicy() const;
+    void setFocusPolicy(Qt::FocusPolicy policy);
+
     bool isAncestorOf(const QQuickItem *child) const;
 
     Qt::MouseButtons acceptedMouseButtons() const;
@@ -383,6 +388,7 @@ Q_SIGNALS:
     void stateChanged(const QString &);
     void focusChanged(bool);
     void activeFocusChanged(bool);
+    Q_REVISION(6, 7) void focusPolicyChanged(Qt::FocusPolicy);
     Q_REVISION(2, 1) void activeFocusOnTabChanged(bool);
     void parentChanged(QQuickItem *);
     void transformOriginChanged(TransformOrigin);
@@ -473,6 +479,10 @@ private:
     friend class QAccessibleQuickItem;
     friend class QQuickAccessibleAttached;
     friend class QQuickAnchorChanges;
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_QUICK_EXPORT QDebug operator<<(QDebug debug, QQuickItem *item);
+#endif
+
     Q_DISABLE_COPY(QQuickItem)
     Q_DECLARE_PRIVATE(QQuickItem)
 };
@@ -503,8 +513,5 @@ QDebug Q_QUICK_EXPORT operator<<(QDebug debug,
 #endif // QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QQuickItem)
-QML_DECLARE_TYPE(QQuickTransform)
 
 #endif // QQUICKITEM_H

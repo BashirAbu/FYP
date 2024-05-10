@@ -1,1 +1,1 @@
-#include "abstractformbuilder.h"
+#include "abstractformbuilder.h" // IWYU pragma: export

@@ -432,6 +432,7 @@ public:
     void setFocusPolicy(Qt::FocusPolicy policy);
     bool hasFocus() const;
     static void setTabOrder(QWidget *, QWidget *);
+    static void setTabOrder(std::initializer_list<QWidget *> widgets);
     void setFocusProxy(QWidget *);
     QWidget *focusProxy() const;
     Qt::ContextMenuPolicy contextMenuPolicy() const;
@@ -768,9 +769,6 @@ private:
 #endif // QT_NO_GESTURES
     friend class QWidgetEffectSourcePrivate;
 
-#ifdef Q_OS_MAC
-    friend bool qt_mac_is_metal(const QWidget *w);
-#endif
     friend Q_WIDGETS_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget);
     friend Q_WIDGETS_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget);
 
@@ -915,7 +913,6 @@ inline bool QWidget::testAttribute(Qt::WidgetAttribute attribute) const
         return data->widget_attributes & (1<<attribute);
     return testAttribute_helper(attribute);
 }
-
 
 #define QWIDGETSIZE_MAX ((1<<24)-1)
 

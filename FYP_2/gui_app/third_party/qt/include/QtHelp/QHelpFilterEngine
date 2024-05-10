@@ -1,1 +1,1 @@
-#include "qhelpfilterengine.h"
+#include "qhelpfilterengine.h" // IWYU pragma: export

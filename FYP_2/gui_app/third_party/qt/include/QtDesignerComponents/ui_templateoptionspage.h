@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'templateoptionspage.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -59,7 +59,7 @@ public:
 
         gridLayout1->addWidget(m_removeTemplatePathButton, 1, 1, 1, 1);
 
-        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         gridLayout1->addItem(spacerItem, 1, 2, 1, 1);
 

@@ -1,1 +1,1 @@
-#include "qopenglbuffer.h"
+#include "qopenglbuffer.h" // IWYU pragma: export

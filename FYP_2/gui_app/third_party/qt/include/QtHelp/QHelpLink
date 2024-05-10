@@ -1,1 +1,1 @@
-#include "qhelplink.h"
+#include "qhelplink.h" // IWYU pragma: export

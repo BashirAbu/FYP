@@ -1,10 +1,13 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtCore/qglobal.h>
-
 #ifndef QLOGGING_H
 #define QLOGGING_H
+
+#include <QtCore/qtclasshelpermacros.h>
+#include <QtCore/qtconfigmacros.h>
+#include <QtCore/qtcoreexports.h>
+#include <QtCore/qcontainerfwd.h>
 
 #if 0
 // header is automatically included in qglobal.h
@@ -22,13 +25,16 @@ QT_BEGIN_NAMESPACE
 class QDebug;
 class QNoDebug;
 
+
 enum QtMsgType {
     QtDebugMsg,
     QtWarningMsg,
     QtCriticalMsg,
     QtFatalMsg,
     QtInfoMsg,
-    QtSystemMsg = QtCriticalMsg
+#if QT_DEPRECATED_SINCE(6, 7)
+    QtSystemMsg Q_DECL_ENUMERATOR_DEPRECATED_X("Use QtCriticalMsg instead.") = QtCriticalMsg
+#endif
 };
 
 class QMessageLogContext
@@ -54,7 +60,7 @@ private:
 
 class QLoggingCategory;
 
-#ifdef Q_CC_MSVC
+#if defined(Q_CC_MSVC_ONLY)
 #  define QT_MESSAGE_LOGGER_NORETURN
 #else
 #  define QT_MESSAGE_LOGGER_NORETURN Q_NORETURN

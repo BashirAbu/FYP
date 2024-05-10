@@ -1,1 +1,1 @@
-#include "qextensionmanager.h"
+#include "qextensionmanager.h" // IWYU pragma: export

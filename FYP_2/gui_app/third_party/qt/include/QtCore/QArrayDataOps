@@ -1,1 +1,1 @@
-#include "qarraydataops.h"
+#include "qarraydataops.h" // IWYU pragma: export

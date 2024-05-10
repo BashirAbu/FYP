@@ -201,6 +201,7 @@
 #if QT_CONFIG(radiobutton)
 #include "qradiobutton.h"
 #endif
+#include "qrhiwidget.h"
 #if QT_CONFIG(rubberband)
 #include "qrubberband.h"
 #endif

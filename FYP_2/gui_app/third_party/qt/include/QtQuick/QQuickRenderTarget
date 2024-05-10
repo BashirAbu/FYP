@@ -1,1 +1,1 @@
-#include "qquickrendertarget.h"
+#include "qquickrendertarget.h" // IWYU pragma: export

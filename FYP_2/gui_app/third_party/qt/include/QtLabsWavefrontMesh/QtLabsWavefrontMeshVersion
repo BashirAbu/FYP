@@ -1,1 +1,1 @@
-#include "qtlabswavefrontmeshversion.h"
+#include "qtlabswavefrontmeshversion.h" // IWYU pragma: export

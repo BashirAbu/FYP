@@ -1,1 +1,1 @@
-#include "abstractwidgetfactory.h"
+#include "abstractwidgetfactory.h" // IWYU pragma: export

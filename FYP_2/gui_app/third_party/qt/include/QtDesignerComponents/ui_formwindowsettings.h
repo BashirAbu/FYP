@@ -8,7 +8,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'formwindowsettings.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -146,8 +146,8 @@ public:
 
         line = new QFrame(FormWindowSettings);
         line->setObjectName("line");
-        line->setFrameShape(QFrame::HLine);
-        line->setFrameShadow(QFrame::Sunken);
+        line->setFrameShape(QFrame::Shape::HLine);
+        line->setFrameShadow(QFrame::Shadow::Sunken);
 
         gridLayout->addWidget(line, 8, 0, 1, 2);
 
@@ -165,7 +165,7 @@ public:
 
         gridLayout->addWidget(pixmapFunctionGroupBox_2, 1, 0, 1, 2);
 
-        spacerItem = new QSpacerItem(111, 115, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        spacerItem = new QSpacerItem(111, 115, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         gridLayout->addItem(spacerItem, 7, 1, 1, 1);
 

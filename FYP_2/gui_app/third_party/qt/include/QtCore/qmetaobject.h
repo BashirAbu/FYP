@@ -135,13 +135,13 @@ public:
     }
 #endif
 
-    template <typename... Args>
+    template <typename ReturnArg, typename... Args>
 #ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
 #endif
-    invoke(QObject *obj, Qt::ConnectionType c, QMetaMethodReturnArgument r,
+    invoke(QObject *obj, Qt::ConnectionType c, QTemplatedMetaMethodReturnArgument<ReturnArg> r,
            Args &&... arguments) const
     {
         auto h = QtPrivate::invokeMethodHelper(r, std::forward<Args>(arguments)...);
@@ -157,16 +157,16 @@ public:
 #endif
     invoke(QObject *obj, Qt::ConnectionType c, Args &&... arguments) const
     {
-        return invoke(obj, c, QMetaMethodReturnArgument{}, std::forward<Args>(arguments)...);
+        return invoke(obj, c, QTemplatedMetaMethodReturnArgument<void>{}, std::forward<Args>(arguments)...);
     }
 
-    template <typename... Args>
+    template <typename ReturnArg, typename... Args>
 #ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
 #endif
-    invoke(QObject *obj, QMetaMethodReturnArgument r, Args &&... arguments) const
+    invoke(QObject *obj, QTemplatedMetaMethodReturnArgument<ReturnArg> r, Args &&... arguments) const
     {
         return invoke(obj, Qt::AutoConnection, r, std::forward<Args>(arguments)...);
     }
@@ -182,13 +182,13 @@ public:
         return invoke(obj, Qt::AutoConnection, std::forward<Args>(arguments)...);
     }
 
-    template <typename... Args>
+    template <typename ReturnArg, typename... Args>
 #ifdef Q_QDOC
     bool
 #else
     QtPrivate::Invoke::IfNotOldStyleArgs<bool, Args...>
 #endif
-    invokeOnGadget(void *gadget, QMetaMethodReturnArgument r, Args &&... arguments) const
+    invokeOnGadget(void *gadget, QTemplatedMetaMethodReturnArgument<ReturnArg> r, Args &&... arguments) const
     {
         auto h = QtPrivate::invokeMethodHelper(r, std::forward<Args>(arguments)...);
         return invokeImpl(*this, gadget, Qt::ConnectionType(-1), h.parameterCount(),
@@ -203,7 +203,7 @@ public:
 #endif
     invokeOnGadget(void *gadget, Args &&... arguments) const
     {
-        return invokeOnGadget(gadget, QMetaMethodReturnArgument{}, std::forward<Args>(arguments)...);
+        return invokeOnGadget(gadget, QTemplatedMetaMethodReturnArgument<void>{}, std::forward<Args>(arguments)...);
     }
 
     inline bool isValid() const { return mobj != nullptr; }
@@ -265,6 +265,8 @@ public:
 
     const char *name() const;
     const char *enumName() const;
+    QMetaType metaType() const;
+
     bool isFlag() const;
     bool isScoped() const;
 
@@ -302,6 +304,7 @@ private:
         quint32 flags() const { return d[2]; }
         qint32 keyCount() const { return static_cast<qint32>(d[3]); }
         quint32 data() const { return d[4]; }
+        int index(const QMetaObject *mobj) const;
 
         const uint *d;
     };
@@ -360,12 +363,14 @@ public:
 
     QVariant read(const QObject *obj) const;
     bool write(QObject *obj, const QVariant &value) const;
+    bool write(QObject *obj, QVariant &&value) const;
     bool reset(QObject *obj) const;
 
     QUntypedBindable bindable(QObject *object) const;
 
     QVariant readOnGadget(const void *gadget) const;
     bool writeOnGadget(void *gadget, const QVariant &value) const;
+    bool writeOnGadget(void *gadget, QVariant &&value) const;
     bool resetOnGadget(void *gadget) const;
 
     bool hasStdCppSet() const;

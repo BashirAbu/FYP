@@ -1,1 +1,1 @@
-#include "qhelpcontentwidget.h"
+#include "qhelpcontentwidget.h" // IWYU pragma: export

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qtgradientview.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -44,7 +44,7 @@ public:
         hboxLayout->setObjectName("hboxLayout");
         newButton = new QToolButton(QtGradientView);
         newButton->setObjectName("newButton");
-        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(newButton->sizePolicy().hasHeightForWidth());
@@ -81,7 +81,7 @@ public:
 
         hboxLayout->addWidget(removeButton);
 
-        spacerItem = new QSpacerItem(71, 26, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        spacerItem = new QSpacerItem(71, 26, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         hboxLayout->addItem(spacerItem);
 

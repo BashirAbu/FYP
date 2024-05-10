@@ -1,1 +1,1 @@
-#include "layoutdecoration.h"
+#include "layoutdecoration.h" // IWYU pragma: export

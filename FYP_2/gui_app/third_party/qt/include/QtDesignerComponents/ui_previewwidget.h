@@ -8,7 +8,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'previewwidget.ui'
 **
-** Created by: Qt User Interface Compiler version 6.5.1
+** Created by: Qt User Interface Compiler version 6.7.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -85,7 +85,7 @@ public:
         if (qdesigner_internal__PreviewWidget->objectName().isEmpty())
             qdesigner_internal__PreviewWidget->setObjectName("qdesigner_internal__PreviewWidget");
         qdesigner_internal__PreviewWidget->resize(608, 367);
-        QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Minimum);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(qdesigner_internal__PreviewWidget->sizePolicy().hasHeightForWidth());
@@ -127,7 +127,7 @@ public:
 
         verticalLayout_2->addWidget(CheckBox2);
 
-        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         verticalLayout_2->addItem(verticalSpacer);
 
@@ -164,7 +164,7 @@ public:
 
         verticalLayout->addLayout(horizontalLayout);
 
-        verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
 
         verticalLayout->addItem(verticalSpacer_2);
 
