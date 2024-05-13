@@ -38,14 +38,22 @@ public:
     QLabel *encoderPulsesLabel;
     QLabel *speedLabel;
     QLabel *positionLabel;
-    QLabel *label;
-    QLabel *label_2;
-    QLabel *label_3;
+    QLabel *accelerationLabel;
+    QLabel *decelerationLabel;
+    QLabel *accelerationTimeLabel;
+    QLabel *decelerationTimeLabel;
+    QLabel *kpLabel;
+    QLabel *kiLabel;
+    QLabel *kdLabel;
     QVBoxLayout *verticalLayout_5;
     QLineEdit *gearRatioLineEdit;
     QLineEdit *encoderPulsesLineEdit;
     QLineEdit *speedLineEdit;
     QLineEdit *positionLineEdit;
+    QLineEdit *accelerationLineEdit;
+    QLineEdit *decelerationLineEdit;
+    QLineEdit *accelerationTimeLineEdit;
+    QLineEdit *decelerationTimeLineEdit;
     QLineEdit *kpLineEdit;
     QLineEdit *kiLineEdit;
     QLineEdit *kdLineEdit;
@@ -62,6 +70,10 @@ public:
     QHBoxLayout *horizontalLayout;
     QPushButton *updatePushbutton;
     QPushButton *connectPushbutton;
+    QLabel *StatusLabel;
+    QLabel *s_PostionLabel;
+    QLabel *s_SpeedLabel;
+    QLabel *s_AccelerationLabel;
     QSpacerItem *verticalSpacer;
     QPlainTextEdit *console;
     QMenuBar *menubar;
@@ -103,20 +115,40 @@ public:
 
         verticalLayout_4->addWidget(positionLabel);
 
-        label = new QLabel(centralwidget);
-        label->setObjectName("label");
+        accelerationLabel = new QLabel(centralwidget);
+        accelerationLabel->setObjectName("accelerationLabel");
 
-        verticalLayout_4->addWidget(label);
+        verticalLayout_4->addWidget(accelerationLabel);
 
-        label_2 = new QLabel(centralwidget);
-        label_2->setObjectName("label_2");
+        decelerationLabel = new QLabel(centralwidget);
+        decelerationLabel->setObjectName("decelerationLabel");
 
-        verticalLayout_4->addWidget(label_2);
+        verticalLayout_4->addWidget(decelerationLabel);
 
-        label_3 = new QLabel(centralwidget);
-        label_3->setObjectName("label_3");
+        accelerationTimeLabel = new QLabel(centralwidget);
+        accelerationTimeLabel->setObjectName("accelerationTimeLabel");
 
-        verticalLayout_4->addWidget(label_3);
+        verticalLayout_4->addWidget(accelerationTimeLabel);
+
+        decelerationTimeLabel = new QLabel(centralwidget);
+        decelerationTimeLabel->setObjectName("decelerationTimeLabel");
+
+        verticalLayout_4->addWidget(decelerationTimeLabel);
+
+        kpLabel = new QLabel(centralwidget);
+        kpLabel->setObjectName("kpLabel");
+
+        verticalLayout_4->addWidget(kpLabel);
+
+        kiLabel = new QLabel(centralwidget);
+        kiLabel->setObjectName("kiLabel");
+
+        verticalLayout_4->addWidget(kiLabel);
+
+        kdLabel = new QLabel(centralwidget);
+        kdLabel->setObjectName("kdLabel");
+
+        verticalLayout_4->addWidget(kdLabel);
 
 
         horizontalLayout_3->addLayout(verticalLayout_4);
@@ -142,6 +174,26 @@ public:
         positionLineEdit->setObjectName("positionLineEdit");
 
         verticalLayout_5->addWidget(positionLineEdit);
+
+        accelerationLineEdit = new QLineEdit(centralwidget);
+        accelerationLineEdit->setObjectName("accelerationLineEdit");
+
+        verticalLayout_5->addWidget(accelerationLineEdit);
+
+        decelerationLineEdit = new QLineEdit(centralwidget);
+        decelerationLineEdit->setObjectName("decelerationLineEdit");
+
+        verticalLayout_5->addWidget(decelerationLineEdit);
+
+        accelerationTimeLineEdit = new QLineEdit(centralwidget);
+        accelerationTimeLineEdit->setObjectName("accelerationTimeLineEdit");
+
+        verticalLayout_5->addWidget(accelerationTimeLineEdit);
+
+        decelerationTimeLineEdit = new QLineEdit(centralwidget);
+        decelerationTimeLineEdit->setObjectName("decelerationTimeLineEdit");
+
+        verticalLayout_5->addWidget(decelerationTimeLineEdit);
 
         kpLineEdit = new QLineEdit(centralwidget);
         kpLineEdit->setObjectName("kpLineEdit");
@@ -234,6 +286,26 @@ public:
 
         verticalLayout_7->addLayout(horizontalLayout_4);
 
+        StatusLabel = new QLabel(centralwidget);
+        StatusLabel->setObjectName("StatusLabel");
+
+        verticalLayout_7->addWidget(StatusLabel);
+
+        s_PostionLabel = new QLabel(centralwidget);
+        s_PostionLabel->setObjectName("s_PostionLabel");
+
+        verticalLayout_7->addWidget(s_PostionLabel);
+
+        s_SpeedLabel = new QLabel(centralwidget);
+        s_SpeedLabel->setObjectName("s_SpeedLabel");
+
+        verticalLayout_7->addWidget(s_SpeedLabel);
+
+        s_AccelerationLabel = new QLabel(centralwidget);
+        s_AccelerationLabel->setObjectName("s_AccelerationLabel");
+
+        verticalLayout_7->addWidget(s_AccelerationLabel);
+
         verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         verticalLayout_7->addItem(verticalSpacer);
@@ -261,14 +333,22 @@ public:
         encoderPulsesLabel->setText(QCoreApplication::translate("MainWindow", "Encoder Pulses", nullptr));
         speedLabel->setText(QCoreApplication::translate("MainWindow", "Speed (RPM):", nullptr));
         positionLabel->setText(QCoreApplication::translate("MainWindow", "Position:", nullptr));
-        label->setText(QCoreApplication::translate("MainWindow", "Kp", nullptr));
-        label_2->setText(QCoreApplication::translate("MainWindow", "Ki", nullptr));
-        label_3->setText(QCoreApplication::translate("MainWindow", "Kd", nullptr));
+        accelerationLabel->setText(QCoreApplication::translate("MainWindow", "Acceleration:", nullptr));
+        decelerationLabel->setText(QCoreApplication::translate("MainWindow", "Deceleration:", nullptr));
+        accelerationTimeLabel->setText(QCoreApplication::translate("MainWindow", "Acceleration Time:", nullptr));
+        decelerationTimeLabel->setText(QCoreApplication::translate("MainWindow", "Deceleration Time:", nullptr));
+        kpLabel->setText(QCoreApplication::translate("MainWindow", "Kp:", nullptr));
+        kiLabel->setText(QCoreApplication::translate("MainWindow", "Ki:", nullptr));
+        kdLabel->setText(QCoreApplication::translate("MainWindow", "Kd:", nullptr));
         setPushbutton->setText(QCoreApplication::translate("MainWindow", "Set", nullptr));
         COMLabel->setText(QCoreApplication::translate("MainWindow", "COM:", nullptr));
         buadRateLabel_2->setText(QCoreApplication::translate("MainWindow", "Buad Rate:", nullptr));
         updatePushbutton->setText(QCoreApplication::translate("MainWindow", "Update", nullptr));
         connectPushbutton->setText(QCoreApplication::translate("MainWindow", "Connect", nullptr));
+        StatusLabel->setText(QCoreApplication::translate("MainWindow", "Status:", nullptr));
+        s_PostionLabel->setText(QCoreApplication::translate("MainWindow", "Position: 0", nullptr));
+        s_SpeedLabel->setText(QCoreApplication::translate("MainWindow", "Speed: 0", nullptr));
+        s_AccelerationLabel->setText(QCoreApplication::translate("MainWindow", "Acceleration: 0", nullptr));
     } // retranslateUi
 
 };

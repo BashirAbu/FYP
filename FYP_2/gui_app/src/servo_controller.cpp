@@ -40,3 +40,23 @@ void ServoController::SetKd(float kd)
 {
     data.kd = kd;
 }
+
+void ServoController::SetAcceleration(float acceleration)
+{
+    data.acceleration = acceleration;
+}
+
+void ServoController::SetDeceleration(float deceleration)
+{
+    data.deceleration = deceleration;
+}
+
+void ServoController::SetAccelerationTime(float accelerationTime)
+{
+    data.accelerationTime = accelerationTime;
+}
+
+void ServoController::SetDecelerationTime(float decelerationTime)
+{
+    data.decelerationTime = decelerationTime;
+}

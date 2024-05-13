@@ -17,6 +17,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->positionLineEdit->setValidator(new QDoubleValidator(ui->positionLineEdit));
     ui->encoderPulsesLineEdit->setValidator(new QDoubleValidator(ui->encoderPulsesLineEdit));
     ui->gearRatioLineEdit->setValidator(new QDoubleValidator(ui->gearRatioLineEdit));
+    ui->accelerationLineEdit->setValidator(new QDoubleValidator(ui->accelerationLineEdit));
+    ui->decelerationLineEdit->setValidator(new QDoubleValidator(ui->decelerationLineEdit));
+    ui->accelerationTimeLineEdit->setValidator(new QDoubleValidator(ui->accelerationTimeLineEdit));
+    ui->decelerationTimeLineEdit->setValidator(new QDoubleValidator(ui->decelerationTimeLineEdit));
     ui->kpLineEdit->setValidator(new QDoubleValidator(ui->kpLineEdit));
     ui->kiLineEdit->setValidator(new QDoubleValidator(ui->kiLineEdit));
     ui->kdLineEdit->setValidator(new QDoubleValidator(ui->kdLineEdit));
@@ -26,6 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->positionLineEdit->setText("0");
     ui->encoderPulsesLineEdit->setText("500");
     ui->gearRatioLineEdit->setText(QString::number(1.0/2.0));
+    ui->accelerationLineEdit->setText("0");
+    ui->decelerationLineEdit->setText("0");
+    ui->accelerationTimeLineEdit->setText("0");
+    ui->decelerationTimeLineEdit->setText("0");
     ui->kiLineEdit->setText("1");
     ui->kdLineEdit->setText("1");
     ui->kpLineEdit->setText("1");

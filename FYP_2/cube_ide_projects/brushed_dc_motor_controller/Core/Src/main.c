@@ -79,9 +79,13 @@ uint8_t changePWM_DutyCycle = 0;
 
 typedef struct ConfigData
 {
-    uint32_t speed;
-    int32_t position;
-    uint32_t encoderCounts;
+    float speed;
+    float position;
+    float encoderPulses;
+    float gearRatio;
+    float ki;
+    float kp;
+    float kd;
 } ConfigData;
 
 
@@ -104,15 +108,13 @@ ConfigData data;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	HAL_UART_Receive_IT(&huart1, rx_buffer, 1);
-	if(bufferIndex == sizeof(ConfigData) - 1)
+  buffer[bufferIndex] = rx_buffer[0];
+  bufferIndex++;
+	if(bufferIndex == sizeof(ConfigData))
 	{
 		bufferIndex = 0;
+		memset(&data,0 , sizeof(data));
 		memcpy(&data, buffer, sizeof(buffer));
-	}
-	else
-	{
-		buffer[bufferIndex] = rx_buffer[0];
-		bufferIndex++;
 	}
 //	if(rx_buffer[0] == '\n')
 //	{
@@ -156,12 +158,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  if(GPIO_Pin == GPIO_PIN_12)
-  {
-	  char buff[5];
-	  sprintf(buff, "Hi\n\r");;
-	  HAL_UART_Transmit(&huart1, (uint8_t*)buff, strlen(buff), HAL_MAX_DELAY);
-  }
   if(GPIO_Pin == GPIO_PIN_6)
   {
 	  int32_t inc = 0;
@@ -176,7 +172,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	  motor_position += inc;
 	  char buff[32];
 	  sprintf(buff, "pos: %ld\n\r", motor_position);
-	  //HAL_UART_Transmit(&huart1, (uint8_t*)buff, strlen(buff), HAL_MAX_DELAY);
+	  HAL_UART_Transmit_IT(&huart1, (uint8_t*)buff, strlen(buff));
   }
 }
 

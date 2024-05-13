@@ -52,23 +52,51 @@
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label">
+             <widget class="QLabel" name="accelerationLabel">
               <property name="text">
-               <string>Kp</string>
+               <string>Acceleration:</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_2">
+             <widget class="QLabel" name="decelerationLabel">
               <property name="text">
-               <string>Ki</string>
+               <string>Deceleration:</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_3">
+             <widget class="QLabel" name="accelerationTimeLabel">
               <property name="text">
-               <string>Kd</string>
+               <string>Acceleration Time:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="decelerationTimeLabel">
+              <property name="text">
+               <string>Deceleration Time:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="kpLabel">
+              <property name="text">
+               <string>Kp:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="kiLabel">
+              <property name="text">
+               <string>Ki:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="kdLabel">
+              <property name="text">
+               <string>Kd:</string>
               </property>
              </widget>
             </item>
@@ -87,6 +115,18 @@
             </item>
             <item>
              <widget class="QLineEdit" name="positionLineEdit"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="accelerationLineEdit"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="decelerationLineEdit"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="accelerationTimeLineEdit"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="decelerationTimeLineEdit"/>
             </item>
             <item>
              <widget class="QLineEdit" name="kpLineEdit"/>
@@ -178,6 +218,34 @@
        </layout>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="StatusLabel">
+      <property name="text">
+       <string>Status:</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="s_PostionLabel">
+      <property name="text">
+       <string>Position: 0</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="s_SpeedLabel">
+      <property name="text">
+       <string>Speed: 0</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="s_AccelerationLabel">
+      <property name="text">
+       <string>Acceleration: 0</string>
+      </property>
+     </widget>
     </item>
     <item>
      <spacer name="verticalSpacer">
