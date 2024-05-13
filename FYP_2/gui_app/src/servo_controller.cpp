@@ -11,12 +11,32 @@ ServoController::~ServoController()
     
 }
 
-void ServoController::SetSpeed(uint32_t speed)
+void ServoController::SetSpeed(float speed)
 {
     data.speed = speed;
 }
 
-void ServoController::SetPosition(int32_t position)
+void ServoController::SetPosition(float position)
 {
     data.position = position;
+}
+void ServoController::SetGearRatio(float ratio)
+{
+    data.gearRatio = ratio;
+}
+void ServoController::SetEncoderPulses(float encoderPulses)
+{
+    data.encoderPulses = encoderPulses;
+}
+void ServoController::SetKi(float ki)
+{
+    data.ki = ki;
+}
+void ServoController::SetKp(float kp)
+{
+    data.kp = kp;
+}
+void ServoController::SetKd(float kd)
+{
+    data.kd = kd;
 }

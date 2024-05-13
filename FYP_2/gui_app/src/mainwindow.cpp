@@ -12,14 +12,24 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("Servo Controller");
 
     serialPort = new QSerialPort(this);
+    ui->buadRateLineEdit->setValidator(new QDoubleValidator(ui->buadRateLineEdit));
+    ui->speedLineEdit->setValidator(new QDoubleValidator(ui->speedLineEdit));
+    ui->positionLineEdit->setValidator(new QDoubleValidator(ui->positionLineEdit));
+    ui->encoderPulsesLineEdit->setValidator(new QDoubleValidator(ui->encoderPulsesLineEdit));
+    ui->gearRatioLineEdit->setValidator(new QDoubleValidator(ui->gearRatioLineEdit));
+    ui->kpLineEdit->setValidator(new QDoubleValidator(ui->kpLineEdit));
+    ui->kiLineEdit->setValidator(new QDoubleValidator(ui->kiLineEdit));
+    ui->kdLineEdit->setValidator(new QDoubleValidator(ui->kdLineEdit));
 
     ui->buadRateLineEdit->setText("9600");
     ui->speedLineEdit->setText("0");
     ui->positionLineEdit->setText("0");
+    ui->encoderPulsesLineEdit->setText("500");
+    ui->gearRatioLineEdit->setText(QString::number(1.0/2.0));
+    ui->kiLineEdit->setText("1");
+    ui->kdLineEdit->setText("1");
+    ui->kpLineEdit->setText("1");
 
-    ui->buadRateLineEdit->setValidator(new QIntValidator(ui->buadRateLineEdit));
-    ui->speedLineEdit->setValidator(new QIntValidator(ui->speedLineEdit));
-    ui->positionLineEdit->setValidator(new QIntValidator(ui->positionLineEdit));
 
     ui->console->setReadOnly(true);
 
@@ -111,8 +121,13 @@ void MainWindow::OnSetButtonClicked()
         return;
     }
     
-    servoController.SetSpeed(ui->speedLineEdit->text().toUInt());
-    servoController.SetPosition(ui->positionLineEdit->text().toInt());
+    servoController.SetSpeed((float)ui->speedLineEdit->text().toDouble());
+    servoController.SetPosition((float)ui->positionLineEdit->text().toDouble());
+    servoController.SetEncoderPulses((float)ui->encoderPulsesLineEdit->text().toDouble());
+    servoController.SetGearRatio((float)ui->gearRatioLineEdit->text().toDouble());
+    servoController.SetKd((float)ui->kdLineEdit->text().toDouble());
+    servoController.SetKi((float)ui->kiLineEdit->text().toDouble());
+    servoController.SetKp((float)ui->kpLineEdit->text().toDouble());
 
 
     QByteArray buffer;
@@ -189,6 +204,8 @@ void MainWindow::ConsoleLogError(QString msg)
     cursor.movePosition(QTextCursor::End);
     QTextCharFormat textFormat;
     textFormat.setForeground(Qt::red);
+    
+
     cursor.mergeCharFormat(textFormat);
     cursor.insertText(msg);
     cursor.insertText("\n"); // Move to the next line after appending text

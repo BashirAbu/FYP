@@ -34,11 +34,21 @@ public:
     QVBoxLayout *verticalLayout_6;
     QHBoxLayout *horizontalLayout_3;
     QVBoxLayout *verticalLayout_4;
+    QLabel *gearRatioLabel;
+    QLabel *encoderPulsesLabel;
     QLabel *speedLabel;
     QLabel *positionLabel;
+    QLabel *label;
+    QLabel *label_2;
+    QLabel *label_3;
     QVBoxLayout *verticalLayout_5;
+    QLineEdit *gearRatioLineEdit;
+    QLineEdit *encoderPulsesLineEdit;
     QLineEdit *speedLineEdit;
     QLineEdit *positionLineEdit;
+    QLineEdit *kpLineEdit;
+    QLineEdit *kiLineEdit;
+    QLineEdit *kdLineEdit;
     QPushButton *setPushbutton;
     QSpacerItem *horizontalSpacer;
     QVBoxLayout *verticalLayout_3;
@@ -73,6 +83,16 @@ public:
         horizontalLayout_3->setObjectName("horizontalLayout_3");
         verticalLayout_4 = new QVBoxLayout();
         verticalLayout_4->setObjectName("verticalLayout_4");
+        gearRatioLabel = new QLabel(centralwidget);
+        gearRatioLabel->setObjectName("gearRatioLabel");
+
+        verticalLayout_4->addWidget(gearRatioLabel);
+
+        encoderPulsesLabel = new QLabel(centralwidget);
+        encoderPulsesLabel->setObjectName("encoderPulsesLabel");
+
+        verticalLayout_4->addWidget(encoderPulsesLabel);
+
         speedLabel = new QLabel(centralwidget);
         speedLabel->setObjectName("speedLabel");
 
@@ -83,11 +103,36 @@ public:
 
         verticalLayout_4->addWidget(positionLabel);
 
+        label = new QLabel(centralwidget);
+        label->setObjectName("label");
+
+        verticalLayout_4->addWidget(label);
+
+        label_2 = new QLabel(centralwidget);
+        label_2->setObjectName("label_2");
+
+        verticalLayout_4->addWidget(label_2);
+
+        label_3 = new QLabel(centralwidget);
+        label_3->setObjectName("label_3");
+
+        verticalLayout_4->addWidget(label_3);
+
 
         horizontalLayout_3->addLayout(verticalLayout_4);
 
         verticalLayout_5 = new QVBoxLayout();
         verticalLayout_5->setObjectName("verticalLayout_5");
+        gearRatioLineEdit = new QLineEdit(centralwidget);
+        gearRatioLineEdit->setObjectName("gearRatioLineEdit");
+
+        verticalLayout_5->addWidget(gearRatioLineEdit);
+
+        encoderPulsesLineEdit = new QLineEdit(centralwidget);
+        encoderPulsesLineEdit->setObjectName("encoderPulsesLineEdit");
+
+        verticalLayout_5->addWidget(encoderPulsesLineEdit);
+
         speedLineEdit = new QLineEdit(centralwidget);
         speedLineEdit->setObjectName("speedLineEdit");
 
@@ -97,6 +142,21 @@ public:
         positionLineEdit->setObjectName("positionLineEdit");
 
         verticalLayout_5->addWidget(positionLineEdit);
+
+        kpLineEdit = new QLineEdit(centralwidget);
+        kpLineEdit->setObjectName("kpLineEdit");
+
+        verticalLayout_5->addWidget(kpLineEdit);
+
+        kiLineEdit = new QLineEdit(centralwidget);
+        kiLineEdit->setObjectName("kiLineEdit");
+
+        verticalLayout_5->addWidget(kiLineEdit);
+
+        kdLineEdit = new QLineEdit(centralwidget);
+        kdLineEdit->setObjectName("kdLineEdit");
+
+        verticalLayout_5->addWidget(kdLineEdit);
 
 
         horizontalLayout_3->addLayout(verticalLayout_5);
@@ -197,8 +257,13 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
+        gearRatioLabel->setText(QCoreApplication::translate("MainWindow", "Gear Ratio", nullptr));
+        encoderPulsesLabel->setText(QCoreApplication::translate("MainWindow", "Encoder Pulses", nullptr));
         speedLabel->setText(QCoreApplication::translate("MainWindow", "Speed (RPM):", nullptr));
         positionLabel->setText(QCoreApplication::translate("MainWindow", "Position:", nullptr));
+        label->setText(QCoreApplication::translate("MainWindow", "Kp", nullptr));
+        label_2->setText(QCoreApplication::translate("MainWindow", "Ki", nullptr));
+        label_3->setText(QCoreApplication::translate("MainWindow", "Kd", nullptr));
         setPushbutton->setText(QCoreApplication::translate("MainWindow", "Set", nullptr));
         COMLabel->setText(QCoreApplication::translate("MainWindow", "COM:", nullptr));
         buadRateLabel_2->setText(QCoreApplication::translate("MainWindow", "Buad Rate:", nullptr));

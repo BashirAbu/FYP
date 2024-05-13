@@ -8,15 +8,24 @@ public:
     ServoController();
     ~ServoController();
 
-    void SetSpeed(uint32_t speed);
-    void SetPosition(int32_t position);
+    void SetSpeed(float speed);
+    void SetPosition(float position);
+    void SetGearRatio(float ratio);
+    void SetEncoderPulses(float encoderPulses);
+    void SetKi(float ki);
+    void SetKp(float kp);
+    void SetKd(float kd);
     
 
     struct ConfigData
     {   
-        uint32_t speed;
-        int32_t position;
-        uint32_t encoderCounts;
+        float speed;
+        float position;
+        float encoderPulses;
+        float gearRatio;
+        float ki;
+        float kp;
+        float kd;
     };
     ConfigData data;
 private:

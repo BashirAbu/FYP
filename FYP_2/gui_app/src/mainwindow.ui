@@ -24,6 +24,20 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
+             <widget class="QLabel" name="gearRatioLabel">
+              <property name="text">
+               <string>Gear Ratio</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="encoderPulsesLabel">
+              <property name="text">
+               <string>Encoder Pulses</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QLabel" name="speedLabel">
               <property name="text">
                <string>Speed (RPM):</string>
@@ -37,15 +51,51 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Kp</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Ki</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Kd</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <item>
+             <widget class="QLineEdit" name="gearRatioLineEdit"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="encoderPulsesLineEdit"/>
+            </item>
+            <item>
              <widget class="QLineEdit" name="speedLineEdit"/>
             </item>
             <item>
              <widget class="QLineEdit" name="positionLineEdit"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="kpLineEdit"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="kiLineEdit"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="kdLineEdit"/>
             </item>
            </layout>
           </item>
