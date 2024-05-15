@@ -79,13 +79,17 @@ uint8_t changePWM_DutyCycle = 0;
 
 typedef struct ConfigData
 {
-    float speed;
-    float position;
-    float encoderPulses;
-    float gearRatio;
-    float ki;
-    float kp;
-    float kd;
+	float speed;
+	float position;
+	float acceleration;
+	float deceleration;
+	float accelerationTime;
+	float decelerationTime;
+	float encoderPulses;
+	float gearRatio;
+	float ki;
+	float kp;
+	float kd;
 } ConfigData;
 
 

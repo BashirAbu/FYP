@@ -136,7 +136,10 @@ void MainWindow::OnSetButtonClicked()
     servoController.SetKd((float)ui->kdLineEdit->text().toDouble());
     servoController.SetKi((float)ui->kiLineEdit->text().toDouble());
     servoController.SetKp((float)ui->kpLineEdit->text().toDouble());
-
+    servoController.SetAcceleration((float)ui->accelerationLineEdit->text().toDouble());
+    servoController.SetAccelerationTime((float)ui->accelerationTimeLineEdit->text().toDouble());
+    servoController.SetDeceleration((float)ui->decelerationLineEdit->text().toDouble());
+    servoController.SetDecelerationTime((float)ui->decelerationTimeLineEdit->text().toDouble());
 
     QByteArray buffer;
     buffer.append(reinterpret_cast<const char*>(&servoController.data), sizeof(servoController.data));
