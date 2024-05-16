@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,25 +60,25 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 uint8_t rx_buffer[RX_BUFFER_SIZE];
-uint8_t recieved_buffer[RECIEVED_BUFFER_SIZE];
-uint8_t recieved_buffer_index = 0;
 char pwm_msg[PWM_MSG_SIZE];
 
 typedef enum MotorDirection
 {
 	ClockWise = 0,
-	CounterClockWise
+	CounterClockWise,
+  none
 }MotorDirection;
 
 MotorDirection motorDirection = ClockWise;
-float motor_current_position = 1.233f;
-float motor_current_speed = 12.44444f;
-float motor_current_acceleration = 122.344f;
+MotorDirection prevMotorDirection = none;
+float motor_current_position;
+float motor_current_speed;
+float motor_current_acceleration;
 
 
 
 uint32_t PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
-uint8_t PWM_countingDutyCycle = 125;
+uint32_t PWM_countingDutyCycle = 0;
 uint8_t changeMotorDirection = 0;
 uint8_t changePWM_DutyCycle = 0;
 
@@ -108,6 +109,16 @@ uint8_t buffer[sizeof(ConfigData)];
 uint8_t bufferIndex = 0;
 ConfigData data;
 
+
+uint32_t currentTime;
+float deltaTime;
+uint32_t prevTime;
+float errorValue;
+float prevErrorValue;
+float derivative;
+float integral;
+
+float controlSignal;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -117,9 +128,93 @@ static void MX_USART1_UART_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
-void MoveMotor()
+
+float CalculateDeltaTime(uint32_t start_time, uint32_t end_time)
+{
+	float result = 0.0f;
+    if (end_time >= start_time)
+    {
+    	result = (float)(end_time - start_time);
+    }
+    else
+    {
+        // Handle timer overflow
+    	result = (float)(0xFFFFFFFF - start_time + end_time + 1);
+    }
+
+    result = result * (1.0f / (64000000.0f / 128.0f));
+
+    return result;
+}
+
+void CalculatePID()
+{
+	currentTime = __HAL_TIM_GET_COUNTER(&htim3);
+	deltaTime = CalculateDeltaTime(currentTime, prevTime);//dt
+	prevTime = currentTime;
+
+	//de
+	errorValue = motor_current_position - data.position;
+	derivative = errorValue - prevErrorValue;
+	prevErrorValue = errorValue;
+
+	integral = integral + errorValue * deltaTime;
+
+	controlSignal = data.kp * errorValue + data.ki * integral + data.kd * derivative;
+}
+
+void DriveMotor()
 {
 
+	if(controlSignal < 0)
+	{
+		motorDirection = CounterClockWise;
+	}
+	else
+	{
+		motorDirection = ClockWise;
+	}
+
+	if(prevMotorDirection != motorDirection)
+	{
+		switch(motorDirection)
+		{
+		case ClockWise:
+		{
+		  PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
+		  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
+		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
+		  //delay here
+		  HAL_Delay(PWM_DEADTIME_DELAY);
+		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_COUNTER_CLOCKWISE_PIN, GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_CLOCKWISE_PIN, GPIO_PIN_RESET);
+
+		}break;
+		case CounterClockWise:
+		{
+		  PWM_CurrentChannel = PWM_COUNTER_CLOCKWISE_CHANNEL;
+		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
+		  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
+		  //delay here
+		  HAL_Delay(PWM_DEADTIME_DELAY);
+		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_CLOCKWISE_PIN, GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_COUNTER_CLOCKWISE_PIN, GPIO_PIN_RESET);
+		}break;
+		}
+	}
+
+	//setting PWM value
+	PWM_countingDutyCycle = (uint32_t)fabs(controlSignal);
+	if(PWM_countingDutyCycle > 125)
+	{
+		PWM_countingDutyCycle = 125;
+	}
+
+    __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
+
+	prevMotorDirection = motorDirection;
 }
 /* USER CODE END PFP */
 
@@ -129,52 +224,14 @@ void MoveMotor()
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	HAL_UART_Receive_IT(&huart1, rx_buffer, 1);
-  buffer[bufferIndex] = rx_buffer[0];
-  bufferIndex++;
+	buffer[bufferIndex] = rx_buffer[0];
+	bufferIndex++;
 	if(bufferIndex == sizeof(ConfigData))
 	{
 		bufferIndex = 0;
 		memset(&data,0 , sizeof(data));
 		memcpy(&data, buffer, sizeof(buffer));
-
 	}
-//	if(rx_buffer[0] == '\n')
-//	{
-//		recieved_buffer[strlen((char*)rx_buffer) - 1] = '\0';
-//		if(strcmp((char*)recieved_buffer, COUNTER_CLOCKWISE_TEXT) == 0)
-//		{
-//			//move clockwise
-//			changeMotorDirection = 1;
-//			motorDirection = CounterClockWise;
-//		}
-//		else if(strcmp((char*)recieved_buffer, CLOCKWISE_TEXT) == 0)
-//		{
-//			//Move clockwise
-//			changeMotorDirection = 1;
-//			motorDirection = ClockWise;
-//		}
-//		else{
-//			changePWM_DutyCycle = 1;
-//			uint16_t duty_cycle = (uint16_t)atoi((char*) recieved_buffer);
-//			sprintf(pwm_msg, "PWM Duty Cycle: %u%%\r\n", duty_cycle);
-//			if(duty_cycle > 100)
-//			{
-//				sprintf(pwm_msg, "Invalid input!\n");
-//			}
-//			HAL_UART_Transmit(&huart1, (uint8_t*)pwm_msg, strlen((char*)pwm_msg), HAL_MAX_DELAY);
-//			//Set Period
-//			PWM_countingDutyCycle = (uint8_t)(((float)duty_cycle / 100.0f) * (float)(255));
-//		}
-//		memset(recieved_buffer, 0, RECIEVED_BUFFER_SIZE);
-//		memset(pwm_msg, 0, PWM_MSG_SIZE);
-//		recieved_buffer_index = 0;
-//	}
-//	else
-//	{
-//		recieved_buffer[recieved_buffer_index] = rx_buffer[0];
-//		recieved_buffer_index++;
-//		recieved_buffer_index = recieved_buffer_index % RECIEVED_BUFFER_SIZE;
-//	}
 }
 
 
@@ -198,7 +255,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
 	if(htim == &htim3)
 	{
-		motor_current_position+= 1.0f;
 		StatusData send_data = {0};
 		send_data.motor_current_position = motor_current_position;
 		send_data.motor_current_speed = motor_current_speed;
@@ -257,48 +313,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  if(changeMotorDirection)
-	  {
-		  switch(motorDirection)
-		  {
-		  case ClockWise:
-		  {
-			  PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
-			  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
-			  __HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
-			  //delay here
-			  HAL_Delay(PWM_DEADTIME_DELAY);
-			  __HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, PWM_countingDutyCycle);
-			  HAL_GPIO_WritePin(GPIOB, GPIO_COUNTER_CLOCKWISE_PIN, GPIO_PIN_SET);
-			  HAL_GPIO_WritePin(GPIOB, GPIO_CLOCKWISE_PIN, GPIO_PIN_RESET);
-			  char buff[6];
-			  sprintf(buff, "CW\n\r");
-			  HAL_UART_Transmit(&huart1, (uint8_t*)buff, strlen(buff), HAL_MAX_DELAY);
-		  }break;
-		  case CounterClockWise:
-		  {
-			  PWM_CurrentChannel = PWM_COUNTER_CLOCKWISE_CHANNEL;
-			  __HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
-			  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
-			  //delay here
-			  HAL_Delay(PWM_DEADTIME_DELAY);
-			  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, PWM_countingDutyCycle);
-			  HAL_GPIO_WritePin(GPIOB, GPIO_CLOCKWISE_PIN, GPIO_PIN_SET);
-			  HAL_GPIO_WritePin(GPIOB, GPIO_COUNTER_CLOCKWISE_PIN, GPIO_PIN_RESET);
-			  char buff[6];
-			  sprintf(buff, "CCW\n\r");
-			  HAL_UART_Transmit(&huart1, (uint8_t*)buff, strlen(buff), HAL_MAX_DELAY);
-		  }break;
-		  }
-		  changeMotorDirection = 0;
-	  }
-	  if(changePWM_DutyCycle)
-	  {
-		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
-
-		  changePWM_DutyCycle = 0;
-	  }
-
+	  CalculatePID();
+	  DriveMotor();
   }
   /* USER CODE END 3 */
 }
