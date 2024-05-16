@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->setPushbutton, &QPushButton::clicked, this, &MainWindow::OnSetButtonClicked);
     QObject::connect(ui->buadRateLineEdit, &QLineEdit::textEdited, this, &MainWindow::OnBuadRateLineEditEdited);
     QObject::connect(serialPort, &QSerialPort::errorOccurred, this, &MainWindow::OnSerialPortHandleError);
+    QObject::connect(serialPort, &QSerialPort::readyRead, this, &MainWindow::OnSerialPortReadyRead);
 
     UpdateCOMComboBox();
 }
@@ -160,6 +161,22 @@ void MainWindow::OnSerialPortHandleError(QSerialPort::SerialPortError error)
     if (error != QSerialPort::NoError) {
         ConsoleLogError("Serial port error or device disconnected:" + serialPort->errorString());
         DisconnectCOMPort();
+    }
+}
+
+void MainWindow::OnSerialPortReadyRead()
+{
+    rxBuffer.append(serialPort->readAll());
+
+    if(rxBuffer.size() > sizeof(servoController.status_data))
+    {
+        //memcpy(&servoController.status_data, rxBuffer.constData(), sizeof(servoController.status_data));
+        ServoController::StatusData* sd = (ServoController::StatusData*) rxBuffer.data();
+        rxBuffer.remove(0, sizeof(servoController.status_data));
+
+        ui->s_PostionLabel->setText("Position: " + QString::number(sd->position));
+        ui->s_AccelerationLabel->setText("Acceleration: " + QString::number(sd->acceleration));
+        ui->s_SpeedLabel->setText("Speed: " + QString::number(sd->speed));
     }
 }
 

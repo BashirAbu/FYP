@@ -35,6 +35,7 @@ private:
     void OnBuadRateLineEditEdited();
     void OnSetButtonClicked();
     void OnSerialPortHandleError(QSerialPort::SerialPortError error);
+    void OnSerialPortReadyRead();
 public:
     uint32_t buadRate = 9600;
 private:
@@ -42,6 +43,7 @@ private:
     bool connected = false;
     QSerialPort* serialPort;
     ServoController servoController;
+    QByteArray rxBuffer;
 };
 
 #endif // MAINWINDOW_H

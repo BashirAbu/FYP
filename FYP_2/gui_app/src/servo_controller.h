@@ -19,7 +19,7 @@ public:
     void SetDeceleration(float deceleration);
     void SetAccelerationTime(float accelerationTime);
     void SetDecelerationTime(float decelerationTime);
-    
+
     struct ConfigData
     {   
         float speed;
@@ -36,11 +36,11 @@ public:
     };
     struct StatusData
     {   
-        float speed;
-        float position;
-        float acceleration;
-        float deceleration;
+        float speed = 0.0f;
+        float position = 0.0f;
+        float acceleration = 0.0f;
     };
     ConfigData data;
+    StatusData status_data;
 private:
 };
