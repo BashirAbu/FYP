@@ -29,14 +29,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->speedLineEdit->setText("0");
     ui->positionLineEdit->setText("0");
     ui->encoderPulsesLineEdit->setText("500");
-    ui->gearRatioLineEdit->setText(QString::number(1.0/2.0));
+    ui->gearRatioLineEdit->setText(QString::number(3249.0 / 121.0));
     ui->accelerationLineEdit->setText("0");
     ui->decelerationLineEdit->setText("0");
     ui->accelerationTimeLineEdit->setText("0");
     ui->decelerationTimeLineEdit->setText("0");
-    ui->kiLineEdit->setText("1");
-    ui->kdLineEdit->setText("1");
-    ui->kpLineEdit->setText("1");
+    ui->kiLineEdit->setText("0");
+    ui->kdLineEdit->setText("0");
+    ui->kpLineEdit->setText("0");
 
 
     ui->console->setReadOnly(true);
@@ -168,16 +168,19 @@ void MainWindow::OnSerialPortReadyRead()
 {
     rxBuffer.append(serialPort->readAll());
 
-    if(rxBuffer.size() > sizeof(servoController.status_data))
-    {
-        //memcpy(&servoController.status_data, rxBuffer.constData(), sizeof(servoController.status_data));
-        ServoController::StatusData* sd = (ServoController::StatusData*) rxBuffer.data();
-        rxBuffer.remove(0, sizeof(servoController.status_data));
+    
+    printf("%s", rxBuffer.data());
+    rxBuffer.clear();
+    // if(rxBuffer.size() > sizeof(servoController.status_data))
+    // {
+    //     //memcpy(&servoController.status_data, rxBuffer.constData(), sizeof(servoController.status_data));
+    //     ServoController::StatusData* sd = (ServoController::StatusData*) rxBuffer.data();
+    //     rxBuffer.remove(0, sizeof(servoController.status_data));
 
-        ui->s_PostionLabel->setText("Position: " + QString::number(sd->position));
-        ui->s_AccelerationLabel->setText("Acceleration: " + QString::number(sd->acceleration));
-        ui->s_SpeedLabel->setText("Speed: " + QString::number(sd->speed));
-    }
+    //     ui->s_PostionLabel->setText("Position: " + QString::number(sd->position));
+    //     ui->s_AccelerationLabel->setText("Acceleration: " + QString::number(sd->acceleration));
+    //     ui->s_SpeedLabel->setText("Speed: " + QString::number(sd->speed));
+    // }
 }
 
 void MainWindow::UpdateCOMComboBox()
@@ -238,6 +241,21 @@ void MainWindow::ConsoleLogError(QString msg)
     cursor.insertText(msg);
     cursor.insertText("\n"); // Move to the next line after appending text
 
+    cursor = ui->console->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    ui->console->setTextCursor(cursor);
+}
+
+void MainWindow::ConsoleLogMsg(QString msg)
+{
+    QTextCursor cursor(ui->console->document());
+    cursor.movePosition(QTextCursor::End);
+    QTextCharFormat textFormat;
+    textFormat.setForeground(Qt::red);
+    
+
+    cursor.mergeCharFormat(textFormat);
+    cursor.insertText(msg);
     cursor = ui->console->textCursor();
     cursor.movePosition(QTextCursor::End);
     ui->console->setTextCursor(cursor);

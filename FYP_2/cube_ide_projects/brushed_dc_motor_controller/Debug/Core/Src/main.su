@@ -1,9 +1,9 @@
-../Core/Src/main.c:133:6:CalculatePID	328	static
-../Core/Src/main.c:153:6:DriveMotor	8	static
-../Core/Src/main.c:215:6:HAL_UART_RxCpltCallback	24	static
-../Core/Src/main.c:229:6:HAL_GPIO_EXTI_Callback	24	static
-../Core/Src/main.c:245:6:HAL_TIM_PeriodElapsedCallback	32	static
-../Core/Src/main.c:263:5:main	8	static
+../Core/Src/main.c:133:6:CalculatePID	280	static
+../Core/Src/main.c:157:6:DriveMotor	8	static
+../Core/Src/main.c:214:6:HAL_UART_RxCpltCallback	24	static
+../Core/Src/main.c:230:6:HAL_GPIO_EXTI_Callback	24	static
+../Core/Src/main.c:246:6:HAL_TIM_PeriodElapsedCallback	32	static
+../Core/Src/main.c:264:5:main	8	static
 ../Core/Src/main.c:323:6:SystemClock_Config	72	static
 ../Core/Src/main.c:362:13:MX_TIM2_Init	64	static
 ../Core/Src/main.c:426:13:MX_TIM3_Init	32	static

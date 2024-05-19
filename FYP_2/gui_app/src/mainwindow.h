@@ -25,6 +25,8 @@ private:
 
     void ConsoleLogDebug(QString msg);
     void ConsoleLogError(QString msg);
+    void ConsoleLogMsg(QString msg);
+
     
     void UpdateCOMComboBox();
     bool ConnectCOMPort(QString COMPortName);

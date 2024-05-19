@@ -49,7 +49,7 @@
 #define GPIO_CLOCKWISE_PIN GPIO_PIN_12 // port B
 #define GPIO_COUNTER_CLOCKWISE_PIN GPIO_PIN_13 // Port B
 #define PWM_COUNTER_CLOCKWISE_CHANNEL TIM_CHANNEL_2
-#define PWM_DEADTIME_DELAY 10
+#define PWM_DEADTIME_DELAY 5
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -75,7 +75,7 @@ float motor_current_position;
 float motor_current_speed;
 float motor_current_acceleration;
 
-
+float _time;
 
 uint32_t PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
 uint32_t PWM_countingDutyCycle = 0;
@@ -135,7 +135,10 @@ void CalculatePID()
 
 	currentTime = HAL_GetTick();
 	deltaTime = (float)((float)(currentTime) - (float)(prevTime)) / 1000.0f;
-	errorValue = motor_current_position - data.position;
+
+	_time = _time + deltaTime;
+
+	errorValue = motor_current_position - (data.position * ((data.gearRatio * data.encoderPulses) / 360.0f));
 	derivative = (errorValue - prevErrorValue) / deltaTime;
 	integral = integral + errorValue * deltaTime;
 
@@ -143,7 +146,8 @@ void CalculatePID()
 
 
 	char msg[255];
-	sprintf(msg, "ev: %f, dv: %f, intg: %f, controlSignal: %f,  dt: %f\n\r", errorValue, derivative, integral, controlSignal, deltaTime);	//de
+	//sprintf(msg, "pos: %f, ev: %f, dv: %f, intg: %f, controlSignal: %f,  dt: %f\n\r\0", ((motor_current_position * 360.0f) / (data.gearRatio * data.encoderPulses)) ,errorValue, derivative, integral, controlSignal, deltaTime);	//de
+	sprintf(msg, "%f, %f\n\0", ((motor_current_position * 360.0f) / (data.gearRatio * data.encoderPulses)) ,_time);	//de
 	HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg) + 1, HAL_MAX_DELAY);
 
 	prevTime = currentTime;
@@ -173,7 +177,7 @@ void DriveMotor()
 		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
 		  //delay here
 		  HAL_Delay(PWM_DEADTIME_DELAY);
-		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
+		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, 0);
 		  HAL_GPIO_WritePin(GPIOB, GPIO_COUNTER_CLOCKWISE_PIN, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB, GPIO_CLOCKWISE_PIN, GPIO_PIN_RESET);
 
@@ -185,7 +189,7 @@ void DriveMotor()
 		  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
 		  //delay here
 		  HAL_Delay(PWM_DEADTIME_DELAY);
-		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
+		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, 0);
 		  HAL_GPIO_WritePin(GPIOB, GPIO_CLOCKWISE_PIN, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB, GPIO_COUNTER_CLOCKWISE_PIN, GPIO_PIN_RESET);
 		}break;
@@ -198,11 +202,6 @@ void DriveMotor()
 	{
 		PWM_countingDutyCycle = 200;
 	}
-	else if (PWM_countingDutyCycle < 50)
-	{
-		PWM_countingDutyCycle = 20;
-	}
-
     __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
 
 	prevMotorDirection = motorDirection;
@@ -222,6 +221,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		bufferIndex = 0;
 		memset(&data,0 , sizeof(data));
 		memcpy(&data, buffer, sizeof(buffer));
+		_time = 0.0f;
+		integral = 0.0f;
 	}
 }
 
@@ -291,16 +292,15 @@ int main(void)
   HAL_UART_Receive_IT(&huart1, rx_buffer, 1);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
-  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
-  HAL_GPIO_WritePin(GPIOB, GPIO_COUNTER_CLOCKWISE_PIN, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOB, GPIO_CLOCKWISE_PIN, GPIO_PIN_RESET);
   HAL_TIM_Base_Start_IT(&htim3);
 
-  data.kp = 0.005f;
-  data.ki = 0.00005f;
-  data.kd = 0.001f;
+  data.kp = 0.0f;
+  data.ki = 0.0f;
+  data.kd = 0.0f;
 
-  data.position = 100000.0f;
+  data.position = 0.0f;
+  data.gearRatio = 3249.0f / 121.0f;
+  data.encoderPulses = 500.0f;
   /* USER CODE END 2 */
 
   /* Infinite loop */
