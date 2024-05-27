@@ -70,6 +70,8 @@ public:
     QHBoxLayout *horizontalLayout;
     QPushButton *updatePushbutton;
     QPushButton *connectPushbutton;
+    QPushButton *recordPushButton;
+    QPushButton *stopRecordingPushButton;
     QLabel *StatusLabel;
     QLabel *s_PostionLabel;
     QLabel *s_SpeedLabel;
@@ -82,7 +84,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(682, 527);
+        MainWindow->resize(682, 571);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
         verticalLayout_7 = new QVBoxLayout(centralwidget);
@@ -286,6 +288,16 @@ public:
 
         verticalLayout_7->addLayout(horizontalLayout_4);
 
+        recordPushButton = new QPushButton(centralwidget);
+        recordPushButton->setObjectName("recordPushButton");
+
+        verticalLayout_7->addWidget(recordPushButton);
+
+        stopRecordingPushButton = new QPushButton(centralwidget);
+        stopRecordingPushButton->setObjectName("stopRecordingPushButton");
+
+        verticalLayout_7->addWidget(stopRecordingPushButton);
+
         StatusLabel = new QLabel(centralwidget);
         StatusLabel->setObjectName("StatusLabel");
 
@@ -345,6 +357,8 @@ public:
         buadRateLabel_2->setText(QCoreApplication::translate("MainWindow", "Buad Rate:", nullptr));
         updatePushbutton->setText(QCoreApplication::translate("MainWindow", "Update", nullptr));
         connectPushbutton->setText(QCoreApplication::translate("MainWindow", "Connect", nullptr));
+        recordPushButton->setText(QCoreApplication::translate("MainWindow", "Record", nullptr));
+        stopRecordingPushButton->setText(QCoreApplication::translate("MainWindow", "Stop Recording", nullptr));
         StatusLabel->setText(QCoreApplication::translate("MainWindow", "Status:", nullptr));
         s_PostionLabel->setText(QCoreApplication::translate("MainWindow", "Position: 0", nullptr));
         s_SpeedLabel->setText(QCoreApplication::translate("MainWindow", "Speed: 0", nullptr));

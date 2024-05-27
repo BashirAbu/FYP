@@ -47,7 +47,8 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->buadRateLineEdit, &QLineEdit::textEdited, this, &MainWindow::OnBuadRateLineEditEdited);
     QObject::connect(serialPort, &QSerialPort::errorOccurred, this, &MainWindow::OnSerialPortHandleError);
     QObject::connect(serialPort, &QSerialPort::readyRead, this, &MainWindow::OnSerialPortReadyRead);
-
+    QObject::connect(ui->recordPushButton, &QPushButton::clicked, this, &MainWindow::OnRecordButtonClicked);
+    QObject::connect(ui->stopRecordingPushButton, &QPushButton::clicked, this, &MainWindow::OnStopRecordingButtonClicked);
     UpdateCOMComboBox();
 }
 
@@ -83,6 +84,7 @@ void MainWindow::DisconnectCOMPort()
     ui->connectPushbutton->setText("Connect");
     ui->COMComboBox->setCurrentIndex(-1);
     ui->COMComboBox->clear();
+    servoController.data.send = 0;
 }
 
 bool MainWindow::CheckSerialPort(QString COMPortName)
@@ -181,6 +183,42 @@ void MainWindow::OnSerialPortReadyRead()
     //     ui->s_AccelerationLabel->setText("Acceleration: " + QString::number(sd->acceleration));
     //     ui->s_SpeedLabel->setText("Speed: " + QString::number(sd->speed));
     // }
+}
+
+void MainWindow::OnRecordButtonClicked()
+{
+    servoController.data.send = 1;
+
+    QByteArray buffer;
+    buffer.append(reinterpret_cast<const char*>(&servoController.data), sizeof(servoController.data));
+
+    qint64 bytesWritten = serialPort->write(buffer);
+    if (bytesWritten == -1) {
+        ConsoleLogDebug("Failed to write the data to port");
+    } else if (bytesWritten != sizeof(servoController.data)) {
+        ConsoleLogDebug("Failed to write all the data to port");
+    } else {
+        ConsoleLogDebug("Data written to port successfully");
+    }
+    serialPort->flush(); // Ensure all data is sent
+}
+
+void MainWindow::OnStopRecordingButtonClicked()
+{
+    servoController.data.send = 0;
+
+    QByteArray buffer;
+    buffer.append(reinterpret_cast<const char*>(&servoController.data), sizeof(servoController.data));
+
+    qint64 bytesWritten = serialPort->write(buffer);
+    if (bytesWritten == -1) {
+        ConsoleLogDebug("Failed to write the data to port");
+    } else if (bytesWritten != sizeof(servoController.data)) {
+        ConsoleLogDebug("Failed to write all the data to port");
+    } else {
+        ConsoleLogDebug("Data written to port successfully");
+    }
+    serialPort->flush(); // Ensure all data is sent
 }
 
 void MainWindow::UpdateCOMComboBox()

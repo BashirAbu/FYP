@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>682</width>
-    <height>527</height>
+    <height>571</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -218,6 +218,20 @@
        </layout>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QPushButton" name="recordPushButton">
+      <property name="text">
+       <string>Record</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="stopRecordingPushButton">
+      <property name="text">
+       <string>Stop Recording</string>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QLabel" name="StatusLabel">

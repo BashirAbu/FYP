@@ -40,16 +40,12 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
-#define RX_BUFFER_SIZE 1
 #define RECIEVED_BUFFER_SIZE 4
-#define PWM_MSG_SIZE 34
-#define COUNTER_CLOCKWISE_TEXT "CCW"
-#define CLOCKWISE_TEXT "CW"
 #define PWM_CLOCKWISE_CHANNEL TIM_CHANNEL_1
 #define GPIO_CLOCKWISE_PIN GPIO_PIN_12 // port B
 #define GPIO_COUNTER_CLOCKWISE_PIN GPIO_PIN_13 // Port B
 #define PWM_COUNTER_CLOCKWISE_CHANNEL TIM_CHANNEL_2
-#define PWM_DEADTIME_DELAY 5
+#define PWM_DEADTIME_DELAY 1
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -59,8 +55,7 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-uint8_t rx_buffer[RX_BUFFER_SIZE];
-char pwm_msg[PWM_MSG_SIZE];
+
 
 typedef enum MotorDirection
 {
@@ -68,20 +63,6 @@ typedef enum MotorDirection
 	CounterClockWise,
   none
 }MotorDirection;
-
-MotorDirection motorDirection = ClockWise;
-MotorDirection prevMotorDirection = none;
-float motor_current_position;
-float motor_current_speed;
-float motor_current_acceleration;
-
-float _time;
-
-uint32_t PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
-uint32_t PWM_countingDutyCycle = 0;
-uint8_t changeMotorDirection = 0;
-uint8_t changePWM_DutyCycle = 0;
-
 typedef struct ConfigData
 {
 	float speed;
@@ -95,6 +76,7 @@ typedef struct ConfigData
 	float ki;
 	float kp;
 	float kd;
+	uint8_t send;
 } ConfigData;
 
 typedef struct StatusData
@@ -105,20 +87,58 @@ typedef struct StatusData
 	float dummy;
 } StatusData;
 
+
+MotorDirection motorDirection = ClockWise;
+MotorDirection prevMotorDirection = none;
+
+float filt_speed_1 = 0.001f;
+float motor_speed_1 = 0.001f;
+
+uint32_t PWM_CurrentChannel = PWM_CLOCKWISE_CHANNEL;
+uint32_t PWM_countingDutyCycle = 0;
+
+
+uint8_t rx_buffer[1];
 uint8_t buffer[sizeof(ConfigData)];
 uint8_t bufferIndex = 0;
 ConfigData data;
 
+float motor_current_position;
+float motor_prev_position;
+float motor_current_speed = 1.0f;
+float motor_current_acceleration;
+float _time;
 
+// position PID
 uint32_t currentTime;
 float deltaTime;
 uint32_t prevTime;
+
+
 float errorValue;
 float prevErrorValue;
 float derivative;
 float integral;
+float controlSignal = 0.0f;
 
-float controlSignal;
+//Motion Profile
+typedef struct MotionProfile
+{
+	float max_acceleration;
+	float max_deceleration;
+	float total_distance;
+	float distance_to_max_velocity;
+	float distance_to_stop;
+	float distance_at_max_velocity;
+	float time_to_max_velocity;
+	float time_at_max_velocity;
+	float time_to_stop;
+	float total_time;
+	float max_velocity;
+} MotionProfile;
+
+MotionProfile motionProfile;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -130,6 +150,63 @@ static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 
+void CalculateMotionProfile()
+{
+	memset(&motionProfile, 0, sizeof(motionProfile));
+
+	motionProfile.max_acceleration = data.acceleration;
+	motionProfile.max_deceleration = data.deceleration;
+	motionProfile.total_distance = data.position - (motor_current_position * ( (data.gearRatio * data.encoderPulses) / 360.0f));
+	motionProfile.max_velocity = data.speed;
+	if(motionProfile.max_acceleration == 0.0f || motionProfile.max_deceleration == 0.0f || motionProfile.max_velocity == 0.0f)
+		return;
+	motionProfile.time_to_max_velocity = motionProfile.max_velocity / motionProfile.max_acceleration;
+	motionProfile.time_to_stop = motionProfile.max_velocity / motionProfile.max_deceleration;
+
+	motionProfile.distance_to_max_velocity = 0.5 * motionProfile.max_acceleration * (float)pow(motionProfile.time_to_max_velocity, 2);
+	motionProfile.distance_to_stop = 0.5 * motionProfile.max_deceleration * (float)pow(motionProfile.time_to_stop, 2);
+	motionProfile.distance_at_max_velocity = motionProfile.total_distance - (motionProfile.distance_to_max_velocity + motionProfile.distance_to_stop);
+  
+	motionProfile.time_at_max_velocity = motionProfile.distance_at_max_velocity / motionProfile.max_velocity;
+  motionProfile.total_time = motionProfile.time_at_max_velocity + motionProfile.time_to_max_velocity + motionProfile.time_to_stop;
+}
+
+float GetVelocityAtTime()
+{
+	float velocity;
+	//Acceleration Phase
+	if(_time < motionProfile.time_to_max_velocity)
+	{
+		velocity = motionProfile.max_acceleration * _time;
+	}
+	//Max Velocity Phase
+	else if(_time < (motionProfile.time_at_max_velocity + motionProfile.time_to_max_velocity))
+	{
+		velocity = motionProfile.max_velocity;
+	}
+	//Deceleration Phase
+	else if (_time < (motionProfile.total_time))
+	{
+		velocity = motionProfile.max_velocity - (motionProfile.max_deceleration * (_time - motionProfile.time_at_max_velocity - motionProfile.time_to_max_velocity));
+	}
+	else
+	{
+		velocity = 0.0f;
+	}
+	return velocity;
+}
+
+float PulsestoDegrees(float pulses)
+{
+	return ((pulses * 360.0f) / (data.gearRatio * data.encoderPulses));
+}
+
+void CalculateSpeed()
+{
+	motor_current_speed = (PulsestoDegrees(motor_current_position) - PulsestoDegrees(motor_prev_position)) / deltaTime;
+	motor_prev_position = motor_current_position;
+}
+
 void CalculatePID()
 {
 
@@ -138,7 +215,20 @@ void CalculatePID()
 
 	_time = _time + deltaTime;
 
-	errorValue = motor_current_position - (data.position * ((data.gearRatio * data.encoderPulses) / 360.0f));
+	//errorValue = motor_current_position - (data.position * ((data.gearRatio * data.encoderPulses) / 360.0f));
+
+  float fs = 0.0f;
+  if (!isnanf(motor_current_speed))
+  {
+    fs =  (0.1116f * motor_current_speed);
+    fs += (0.1116f * motor_speed_1);
+    fs += (0.7767f * filt_speed_1);
+    motor_speed_1 = motor_current_speed;
+    filt_speed_1 = fs;
+  }
+
+
+	errorValue = GetVelocityAtTime() - fs;
 	derivative = (errorValue - prevErrorValue) / deltaTime;
 	integral = integral + errorValue * deltaTime;
 
@@ -147,8 +237,9 @@ void CalculatePID()
 
 	char msg[255];
 	//sprintf(msg, "pos: %f, ev: %f, dv: %f, intg: %f, controlSignal: %f,  dt: %f\n\r\0", ((motor_current_position * 360.0f) / (data.gearRatio * data.encoderPulses)) ,errorValue, derivative, integral, controlSignal, deltaTime);	//de
-	sprintf(msg, "%f, %f\n\0", ((motor_current_position * 360.0f) / (data.gearRatio * data.encoderPulses)) ,_time);	//de
-	HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg) + 1, HAL_MAX_DELAY);
+	//sprintf(msg, "%d, %d, %d, %d\n\0", (int)((motor_current_position * 360.0f) / (data.gearRatio * data.encoderPulses)) ,(int)_time, (int)add_speed_measurement(motor_current_speed), (int) GetVelocityAtTime());	//de
+  sprintf(msg, "%d %d %d %d\n\0", (int)GetVelocityAtTime(), (int)motor_current_speed, (int)fs, (int) PulsestoDegrees(motor_current_position));
+	HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
 	prevTime = currentTime;
 	prevErrorValue = errorValue;
@@ -198,9 +289,9 @@ void DriveMotor()
 
 	//setting PWM value
 	PWM_countingDutyCycle = (uint32_t)fabs(controlSignal);
-	if(PWM_countingDutyCycle > 200)
+	if(PWM_countingDutyCycle > 150)
 	{
-		PWM_countingDutyCycle = 200;
+		PWM_countingDutyCycle = 150;
 	}
     __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
 
@@ -223,6 +314,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		memcpy(&data, buffer, sizeof(buffer));
 		_time = 0.0f;
 		integral = 0.0f;
+		CalculateMotionProfile();
 	}
 }
 
@@ -252,7 +344,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 		send_data.motor_current_speed = motor_current_speed;
 		send_data.motor_current_acceleration= motor_current_acceleration;
 		send_data.dummy = 1212.22f;
-		//HAL_UART_Transmit_IT(&huart1, (uint8_t*)&send_data, sizeof(StatusData));
+		//if(data.send)
+			//HAL_UART_Transmit_IT(&huart1, (uint8_t*)&send_data, sizeof(StatusData));
 	}
 }
 /* USER CODE END 0 */
@@ -294,13 +387,18 @@ int main(void)
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
   HAL_TIM_Base_Start_IT(&htim3);
 
-  data.kp = 0.0f;
+  data.kp = 1.5f;
   data.ki = 0.0f;
-  data.kd = 0.0f;
+  data.kd = 0.2f;
 
-  data.position = 0.0f;
+  data.position = 12000.0f;
   data.gearRatio = 3249.0f / 121.0f;
   data.encoderPulses = 500.0f;
+
+  data.speed = 550.0f;
+  data.acceleration = 120.0f;
+  data.deceleration = 120.0f;
+  CalculateMotionProfile();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -310,8 +408,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  CalculateSpeed();
 	  CalculatePID();
 	  DriveMotor();
+	  HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }

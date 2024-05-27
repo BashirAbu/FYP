@@ -33,6 +33,7 @@ public:
         float ki;
         float kp;
         float kd;
+        uint8_t send = 0;
     };
     struct StatusData
     {   

@@ -38,6 +38,8 @@ private:
     void OnSetButtonClicked();
     void OnSerialPortHandleError(QSerialPort::SerialPortError error);
     void OnSerialPortReadyRead();
+    void OnRecordButtonClicked();
+    void OnStopRecordingButtonClicked();
 public:
     uint32_t buadRate = 9600;
 private:
