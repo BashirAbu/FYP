@@ -217,14 +217,16 @@ void CalculatePID()
 
 	//errorValue = motor_current_position - (data.position * ((data.gearRatio * data.encoderPulses) / 360.0f));
 
-  float fs = 0.0f;
-  if (!isnanf(motor_current_speed))
+  static float fs = 0.0f;
+  if (!isnanf(motor_current_speed) && !isinf(motor_current_speed))
   {
-    fs =  (0.1116f * motor_current_speed);
-    fs += (0.1116f * motor_speed_1);
-    fs += (0.7767f * filt_speed_1);
-    motor_speed_1 = motor_current_speed;
-    filt_speed_1 = fs;
+    // fs =  (0.1116f * motor_current_speed);
+    // fs += (0.1116f * motor_speed_1);
+    // fs += (0.7767f * filt_speed_1);
+    // motor_speed_1 = motor_current_speed;
+    // filt_speed_1 = fs;
+    fs = 0.1f * motor_current_speed + (1.0f - 0.1f) * fs;
+
   }
 
 
@@ -238,7 +240,7 @@ void CalculatePID()
 	char msg[255];
 	//sprintf(msg, "pos: %f, ev: %f, dv: %f, intg: %f, controlSignal: %f,  dt: %f\n\r\0", ((motor_current_position * 360.0f) / (data.gearRatio * data.encoderPulses)) ,errorValue, derivative, integral, controlSignal, deltaTime);	//de
 	//sprintf(msg, "%d, %d, %d, %d\n\0", (int)((motor_current_position * 360.0f) / (data.gearRatio * data.encoderPulses)) ,(int)_time, (int)add_speed_measurement(motor_current_speed), (int) GetVelocityAtTime());	//de
-  sprintf(msg, "%d %d %d %d\n\0", (int)GetVelocityAtTime(), (int)motor_current_speed, (int)fs, (int) PulsestoDegrees(motor_current_position));
+  sprintf(msg, "%d %d %d %d %d\n\0", (int)GetVelocityAtTime(), (int)motor_current_speed, (int)fs, (int) PulsestoDegrees(motor_current_position), (int) controlSignal);
 	HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
 	prevTime = currentTime;
@@ -386,18 +388,18 @@ int main(void)
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
   HAL_TIM_Base_Start_IT(&htim3);
-
-  data.kp = 1.5f;
-  data.ki = 0.0f;
-  data.kd = 0.2f;
-
-  data.position = 12000.0f;
   data.gearRatio = 3249.0f / 121.0f;
   data.encoderPulses = 500.0f;
 
-  data.speed = 550.0f;
-  data.acceleration = 120.0f;
-  data.deceleration = 120.0f;
+  data.kp = 1.5f;
+  data.ki = 0.5f;
+  data.kd = 0.0f;
+
+
+  data.position = 12000.0f;
+  data.speed = 250.0f;
+  data.acceleration = 90.0f;
+  data.deceleration = 20.0f;
   CalculateMotionProfile();
   /* USER CODE END 2 */
 
@@ -411,7 +413,6 @@ int main(void)
 	  CalculateSpeed();
 	  CalculatePID();
 	  DriveMotor();
-	  HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
