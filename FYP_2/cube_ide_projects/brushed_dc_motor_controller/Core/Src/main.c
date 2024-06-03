@@ -291,9 +291,9 @@ void DriveMotor()
 
 	//setting PWM value
 	PWM_countingDutyCycle = (uint32_t)fabs(controlSignal);
-	if(PWM_countingDutyCycle > 150)
+	if(PWM_countingDutyCycle > 180)
 	{
-		PWM_countingDutyCycle = 150;
+		PWM_countingDutyCycle = 180;
 	}
     __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
 
@@ -391,15 +391,15 @@ int main(void)
   data.gearRatio = 3249.0f / 121.0f;
   data.encoderPulses = 500.0f;
 
-  data.kp = 1.5f;
-  data.ki = 0.5f;
+  data.kp = 1.0f;
+  data.ki = 5.0f;
   data.kd = 0.0f;
 
 
-  data.position = 12000.0f;
-  data.speed = 250.0f;
-  data.acceleration = 90.0f;
-  data.deceleration = 20.0f;
+  data.position = 5683.0f;
+  data.speed = 650.0f;
+  data.acceleration = 500.0f;
+  data.deceleration = 500.0f;
   CalculateMotionProfile();
   /* USER CODE END 2 */
 
