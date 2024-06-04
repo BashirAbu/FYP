@@ -135,6 +135,7 @@ typedef struct MotionProfile
 	float time_to_stop;
 	float total_time;
 	float max_velocity;
+  MotorDirection dir;
 } MotionProfile;
 
 MotionProfile motionProfile;
@@ -154,9 +155,14 @@ void CalculateMotionProfile()
 {
 	memset(&motionProfile, 0, sizeof(motionProfile));
 
+  if(data.position < 0.0f)
+    motionProfile.dir = ClockWise;
+  else
+    motionProfile.dir = CounterClockWise;
+
 	motionProfile.max_acceleration = data.acceleration;
 	motionProfile.max_deceleration = data.deceleration;
-	motionProfile.total_distance = data.position - (motor_current_position * ( (data.gearRatio * data.encoderPulses) / 360.0f));
+	motionProfile.total_distance = fabs(data.position) - (motor_current_position * ( (data.gearRatio * data.encoderPulses) / 360.0f));
 	motionProfile.max_velocity = data.speed;
 	if(motionProfile.max_acceleration == 0.0f || motionProfile.max_deceleration == 0.0f || motionProfile.max_velocity == 0.0f)
 		return;
@@ -193,7 +199,7 @@ float GetVelocityAtTime()
 	{
 		velocity = 0.0f;
 	}
-	return velocity;
+	return motionProfile.dir == ClockWise? -velocity : velocity;
 }
 
 float PulsestoDegrees(float pulses)
@@ -252,11 +258,11 @@ void DriveMotor()
 
 	if(controlSignal < 0)
 	{
-		motorDirection = CounterClockWise;
+		motorDirection = ClockWise;
 	}
 	else
 	{
-		motorDirection = ClockWise;
+		motorDirection = CounterClockWise;
 	}
 
 	if(prevMotorDirection != motorDirection)
@@ -392,12 +398,12 @@ int main(void)
   data.encoderPulses = 500.0f;
 
   data.kp = 1.0f;
-  data.ki = 5.0f;
+  data.ki = 4.0f;
   data.kd = 0.0f;
 
 
-  data.position = 5683.0f;
-  data.speed = 650.0f;
+  data.position = 5463.0f;
+  data.speed = 550.0f;
   data.acceleration = 500.0f;
   data.deceleration = 500.0f;
   CalculateMotionProfile();
