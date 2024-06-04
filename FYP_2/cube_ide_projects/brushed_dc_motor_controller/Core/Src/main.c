@@ -99,7 +99,7 @@ uint32_t PWM_countingDutyCycle = 0;
 
 
 uint8_t rx_buffer[1];
-uint8_t buffer[sizeof(ConfigData)];
+uint8_t buffer[256];
 uint8_t bufferIndex = 0;
 ConfigData data;
 
@@ -149,7 +149,10 @@ static void MX_USART1_UART_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
-
+float PulsestoDegrees(float pulses)
+{
+	return ((pulses * 360.0f) / (data.gearRatio * data.encoderPulses));
+}
 
 void CalculateMotionProfile()
 {
@@ -162,7 +165,7 @@ void CalculateMotionProfile()
 
 	motionProfile.max_acceleration = data.acceleration;
 	motionProfile.max_deceleration = data.deceleration;
-	motionProfile.total_distance = fabs(data.position) - (motor_current_position * ( (data.gearRatio * data.encoderPulses) / 360.0f));
+	motionProfile.total_distance = fabs((PulsestoDegrees(motor_current_position) - (data.position)));
 	motionProfile.max_velocity = data.speed;
 	if(motionProfile.max_acceleration == 0.0f || motionProfile.max_deceleration == 0.0f || motionProfile.max_velocity == 0.0f)
 		return;
@@ -202,10 +205,7 @@ float GetVelocityAtTime()
 	return motionProfile.dir == ClockWise? -velocity : velocity;
 }
 
-float PulsestoDegrees(float pulses)
-{
-	return ((pulses * 360.0f) / (data.gearRatio * data.encoderPulses));
-}
+
 
 void CalculateSpeed()
 {
@@ -313,17 +313,23 @@ void DriveMotor()
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	HAL_UART_Receive_IT(&huart1, rx_buffer, 1);
-	buffer[bufferIndex] = rx_buffer[0];
-	bufferIndex++;
-	if(bufferIndex == sizeof(ConfigData))
+	if(rx_buffer[0] == '\n')
 	{
+    int p, s, a, d;
+    sscanf(buffer, "%d %d %d %d", &p, &s, &a, &d);
+    memset(buffer, 0, 256);
+    data.position = p;
+    data.speed = s;
+    data.acceleration = a;
+    data.deceleration = d;
 		bufferIndex = 0;
-		memset(&data,0 , sizeof(data));
-		memcpy(&data, buffer, sizeof(buffer));
 		_time = 0.0f;
 		integral = 0.0f;
 		CalculateMotionProfile();
+    return;
 	}
+	buffer[bufferIndex] = rx_buffer[0];
+	bufferIndex++;
 }
 
 
@@ -402,11 +408,11 @@ int main(void)
   data.kd = 0.0f;
 
 
-  data.position = 5463.0f;
-  data.speed = 550.0f;
-  data.acceleration = 500.0f;
-  data.deceleration = 500.0f;
-  CalculateMotionProfile();
+  // data.position = 5463.0f;
+  // data.speed = 550.0f;
+  // data.acceleration = 500.0f;
+  // data.deceleration = 500.0f;
+  //CalculateMotionProfile();
   /* USER CODE END 2 */
 
   /* Infinite loop */

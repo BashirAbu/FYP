@@ -173,12 +173,14 @@ void MainWindow::OnSerialPortReadyRead()
     
     printf("%s", rxBuffer.data());
     rxBuffer.clear();
+
+    
     // if(rxBuffer.size() > sizeof(servoController.status_data))
     // {
     //     //memcpy(&servoController.status_data, rxBuffer.constData(), sizeof(servoController.status_data));
     //     ServoController::StatusData* sd = (ServoController::StatusData*) rxBuffer.data();
     //     rxBuffer.remove(0, sizeof(servoController.status_data));
-
+    //
     //     ui->s_PostionLabel->setText("Position: " + QString::number(sd->position));
     //     ui->s_AccelerationLabel->setText("Acceleration: " + QString::number(sd->acceleration));
     //     ui->s_SpeedLabel->setText("Speed: " + QString::number(sd->speed));
