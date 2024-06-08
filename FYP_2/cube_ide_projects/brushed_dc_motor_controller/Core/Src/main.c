@@ -120,7 +120,7 @@ float prevErrorValue;
 float derivative;
 float integral;
 float controlSignal = 0.0f;
-
+static float fs = 0.0f;
 //Motion Profile
 typedef struct MotionProfile
 {
@@ -135,6 +135,8 @@ typedef struct MotionProfile
 	float time_to_stop;
 	float total_time;
 	float max_velocity;
+  float initial_velocity;
+  float initial_position;
   MotorDirection dir;
 } MotionProfile;
 
@@ -154,6 +156,7 @@ float PulsestoDegrees(float pulses)
 	return ((pulses * 360.0f) / (data.gearRatio * data.encoderPulses));
 }
 
+
 void CalculateMotionProfile()
 {
 	memset(&motionProfile, 0, sizeof(motionProfile));
@@ -165,20 +168,93 @@ void CalculateMotionProfile()
 
 	motionProfile.max_acceleration = data.acceleration;
 	motionProfile.max_deceleration = data.deceleration;
-	motionProfile.total_distance = fabs((PulsestoDegrees(motor_current_position) - (data.position)));
-	motionProfile.max_velocity = data.speed;
+  motionProfile.initial_velocity = fs;
+  motionProfile.initial_position = PulsestoDegrees(motor_current_position);
+	motionProfile.total_distance = fabs((data.position) - (PulsestoDegrees(motor_current_position)));
+	motionProfile.max_velocity = motionProfile.dir == ClockWise? -data.speed : data.speed;
 	if(motionProfile.max_acceleration == 0.0f || motionProfile.max_deceleration == 0.0f || motionProfile.max_velocity == 0.0f)
 		return;
-	motionProfile.time_to_max_velocity = motionProfile.max_velocity / motionProfile.max_acceleration;
-	motionProfile.time_to_stop = motionProfile.max_velocity / motionProfile.max_deceleration;
+	motionProfile.time_to_max_velocity = fabs((motionProfile.max_velocity - motionProfile.initial_velocity) / motionProfile.max_acceleration);
+	motionProfile.time_to_stop = fabs((motionProfile.max_velocity) / -motionProfile.max_deceleration);
 
 	motionProfile.distance_to_max_velocity = 0.5 * motionProfile.max_acceleration * (float)pow(motionProfile.time_to_max_velocity, 2);
 	motionProfile.distance_to_stop = 0.5 * motionProfile.max_deceleration * (float)pow(motionProfile.time_to_stop, 2);
 	motionProfile.distance_at_max_velocity = motionProfile.total_distance - (motionProfile.distance_to_max_velocity + motionProfile.distance_to_stop);
   
-	motionProfile.time_at_max_velocity = motionProfile.distance_at_max_velocity / motionProfile.max_velocity;
+	motionProfile.time_at_max_velocity = fabs(motionProfile.distance_at_max_velocity / motionProfile.max_velocity);
   motionProfile.total_time = motionProfile.time_at_max_velocity + motionProfile.time_to_max_velocity + motionProfile.time_to_stop;
 }
+
+float get_current_position(MotionProfile* profile, float elapsed_time) {
+    float current_position = profile->initial_position;
+    float current_velocity = profile->initial_velocity;
+
+    // Acceleration phase
+    if (elapsed_time <= profile->time_to_max_velocity) {
+    	if(profile->initial_velocity > profile->max_velocity)
+    	{
+    		current_position -= profile->initial_velocity * elapsed_time + 0.5 * profile->max_acceleration * pow(elapsed_time, 2);
+    		current_velocity += profile->max_acceleration * elapsed_time;
+    	}
+    	else if(profile->initial_velocity < profile->max_velocity)
+    	{
+    		current_position += profile->initial_velocity * elapsed_time + 0.5 * profile->max_acceleration * pow(elapsed_time, 2);
+    		current_velocity += profile->max_acceleration * elapsed_time;
+    	}
+    }
+    // Constant velocity phase
+    else if (elapsed_time <= (profile->time_to_max_velocity + profile->time_at_max_velocity)) {
+      if(profile->initial_velocity > profile->max_velocity)
+    	{
+        float acceleration_time = profile->time_to_max_velocity;
+        float constant_velocity_time = elapsed_time - acceleration_time;
+        current_position = -(profile->distance_to_max_velocity + -profile->max_velocity * constant_velocity_time);
+        current_velocity = profile->max_velocity;
+      }
+      else
+      {
+        float acceleration_time = profile->time_to_max_velocity;
+        float constant_velocity_time = elapsed_time - acceleration_time;
+        current_position = profile->distance_to_max_velocity + profile->max_velocity * constant_velocity_time;
+        current_velocity = profile->max_velocity;
+      }
+    }
+    // Deceleration phase
+    else if (elapsed_time <= profile->total_time) {
+    	if(profile->initial_velocity > profile->max_velocity)
+		{
+			float acceleration_time = profile->time_to_max_velocity;
+			float constant_velocity_time = profile->time_at_max_velocity;
+			float deceleration_time = elapsed_time - (acceleration_time + constant_velocity_time);
+			current_position -= profile->distance_to_max_velocity + profile->distance_at_max_velocity + profile->max_velocity * deceleration_time - 0.5 * profile->max_deceleration * pow(deceleration_time, 2);
+			current_velocity = profile->max_velocity - profile->max_deceleration * deceleration_time;
+		}
+    	else if(profile->initial_velocity < profile->max_velocity)
+		{
+    		float acceleration_time = profile->time_to_max_velocity;
+			float constant_velocity_time = profile->time_at_max_velocity;
+			float deceleration_time = elapsed_time - (acceleration_time + constant_velocity_time);
+			current_position += profile->distance_to_max_velocity + profile->distance_at_max_velocity + profile->max_velocity * deceleration_time - 0.5 * profile->max_deceleration * pow(deceleration_time, 2);
+			current_velocity = profile->max_velocity - profile->max_deceleration * deceleration_time;
+		}
+    }
+    // If elapsed_time exceeds total_time, return final position
+    else {
+      if(profile->initial_velocity > profile->max_velocity)
+      {
+        current_position = -(profile->initial_position + profile->total_distance);
+        current_velocity = 0;
+      }
+      else
+      {
+        current_position = (profile->initial_position + profile->total_distance);
+        current_velocity = 0;
+      }
+    }
+
+    return current_position;
+}
+
 
 float GetVelocityAtTime()
 {
@@ -186,7 +262,10 @@ float GetVelocityAtTime()
 	//Acceleration Phase
 	if(_time < motionProfile.time_to_max_velocity)
 	{
-		velocity = motionProfile.max_acceleration * _time;
+    if(motionProfile.initial_velocity > motionProfile.max_velocity)
+		  velocity = motionProfile.initial_velocity - motionProfile.max_acceleration * _time;
+    else
+      velocity = motionProfile.initial_velocity + motionProfile.max_acceleration * _time;
 	}
 	//Max Velocity Phase
 	else if(_time < (motionProfile.time_at_max_velocity + motionProfile.time_to_max_velocity))
@@ -196,13 +275,17 @@ float GetVelocityAtTime()
 	//Deceleration Phase
 	else if (_time < (motionProfile.total_time))
 	{
-		velocity = motionProfile.max_velocity - (motionProfile.max_deceleration * (_time - motionProfile.time_at_max_velocity - motionProfile.time_to_max_velocity));
+    if(motionProfile.initial_velocity > motionProfile.max_velocity)
+		  velocity = motionProfile.max_velocity + (motionProfile.max_deceleration * (_time - motionProfile.time_at_max_velocity - motionProfile.time_to_max_velocity));
+    else
+      velocity = motionProfile.max_velocity - (motionProfile.max_deceleration * (_time - motionProfile.time_at_max_velocity - motionProfile.time_to_max_velocity));
+		
 	}
 	else
 	{
 		velocity = 0.0f;
 	}
-	return motionProfile.dir == ClockWise? -velocity : velocity;
+  return velocity;
 }
 
 
@@ -221,9 +304,6 @@ void CalculatePID()
 
 	_time = _time + deltaTime;
 
-	//errorValue = motor_current_position - (data.position * ((data.gearRatio * data.encoderPulses) / 360.0f));
-
-  static float fs = 0.0f;
   if (!isnanf(motor_current_speed) && !isinf(motor_current_speed))
   {
     // fs =  (0.1116f * motor_current_speed);
@@ -236,17 +316,14 @@ void CalculatePID()
   }
 
 
-	errorValue = GetVelocityAtTime() - fs;
+	errorValue = get_current_position(&motionProfile ,_time) - PulsestoDegrees(motor_current_position);
 	derivative = (errorValue - prevErrorValue) / deltaTime;
 	integral = integral + errorValue * deltaTime;
 
 	controlSignal = data.kp * errorValue + data.ki * integral + data.kd * derivative;
 
-
 	char msg[255];
-	//sprintf(msg, "pos: %f, ev: %f, dv: %f, intg: %f, controlSignal: %f,  dt: %f\n\r\0", ((motor_current_position * 360.0f) / (data.gearRatio * data.encoderPulses)) ,errorValue, derivative, integral, controlSignal, deltaTime);	//de
-	//sprintf(msg, "%d, %d, %d, %d\n\0", (int)((motor_current_position * 360.0f) / (data.gearRatio * data.encoderPulses)) ,(int)_time, (int)add_speed_measurement(motor_current_speed), (int) GetVelocityAtTime());	//de
-  sprintf(msg, "%d %d %d %d %d\n\0", (int)GetVelocityAtTime(), (int)motor_current_speed, (int)fs, (int) PulsestoDegrees(motor_current_position), (int) controlSignal);
+  sprintf(msg, "%d %d %d %d %d %d %d %d\n\0", (int)GetVelocityAtTime(), (int)motor_current_speed, (int)fs, (int) controlSignal, (int) PulsestoDegrees(motor_current_position), (int) get_current_position(&motionProfile ,_time), (int) _time, (int) motionProfile.total_time);
 	HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
 	prevTime = currentTime;
@@ -275,7 +352,7 @@ void DriveMotor()
 		  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
 		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
 		  //delay here
-		  HAL_Delay(PWM_DEADTIME_DELAY);
+		  //HAL_Delay(PWM_DEADTIME_DELAY);
 		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, 0);
 		  HAL_GPIO_WritePin(GPIOB, GPIO_COUNTER_CLOCKWISE_PIN, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB, GPIO_CLOCKWISE_PIN, GPIO_PIN_RESET);
@@ -287,7 +364,7 @@ void DriveMotor()
 		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CLOCKWISE_CHANNEL, 0);
 		  __HAL_TIM_SET_COMPARE(&htim2, PWM_COUNTER_CLOCKWISE_CHANNEL, 0);
 		  //delay here
-		  HAL_Delay(PWM_DEADTIME_DELAY);
+		 // HAL_Delay(PWM_DEADTIME_DELAY);
 		  __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, 0);
 		  HAL_GPIO_WritePin(GPIOB, GPIO_CLOCKWISE_PIN, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB, GPIO_COUNTER_CLOCKWISE_PIN, GPIO_PIN_RESET);
@@ -324,7 +401,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     data.deceleration = d;
 		bufferIndex = 0;
 		_time = 0.0f;
-		integral = 0.0f;
+		//integral = 0.0f;
 		CalculateMotionProfile();
     return;
 	}
@@ -404,15 +481,8 @@ int main(void)
   data.encoderPulses = 500.0f;
 
   data.kp = 1.0f;
-  data.ki = 4.0f;
+  data.ki = 0.0f;
   data.kd = 0.0f;
-
-
-  // data.position = 5463.0f;
-  // data.speed = 550.0f;
-  // data.acceleration = 500.0f;
-  // data.deceleration = 500.0f;
-  //CalculateMotionProfile();
   /* USER CODE END 2 */
 
   /* Infinite loop */
