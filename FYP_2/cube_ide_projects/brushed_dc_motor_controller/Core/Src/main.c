@@ -291,7 +291,7 @@ float GetVelocityAtTime()
 	if(_time < motionProfile.time_to_max_velocity)
 	{
     if(motionProfile.initial_velocity > motionProfile.max_velocity)
-		  velocity = motionProfile.initial_velocity - motionProfile.max_acceleration * _time;
+		  velocity = motionProfile.initial_velocity + motionProfile.max_acceleration * _time;
     else
       velocity = motionProfile.initial_velocity + motionProfile.max_acceleration * _time;
 	}
@@ -306,7 +306,7 @@ float GetVelocityAtTime()
     if(motionProfile.initial_velocity > motionProfile.max_velocity)
 		  velocity = motionProfile.max_velocity + (motionProfile.max_deceleration * (_time - motionProfile.time_at_max_velocity - motionProfile.time_to_max_velocity));
     else
-      velocity = motionProfile.max_velocity - (motionProfile.max_deceleration * (_time - motionProfile.time_at_max_velocity - motionProfile.time_to_max_velocity));
+      velocity = motionProfile.max_velocity + (motionProfile.max_deceleration * (_time - motionProfile.time_at_max_velocity - motionProfile.time_to_max_velocity));
 		
 	}
 	else
@@ -334,13 +334,7 @@ void CalculatePID()
 
   if (!isnanf(motor_current_speed) && !isinf(motor_current_speed))
   {
-    // fs =  (0.1116f * motor_current_speed);
-    // fs += (0.1116f * motor_speed_1);
-    // fs += (0.7767f * filt_speed_1);
-    // motor_speed_1 = motor_current_speed;
-    // filt_speed_1 = fs;
     fs = 0.1f * motor_current_speed + (1.0f - 0.1f) * fs;
-
   }
 
 

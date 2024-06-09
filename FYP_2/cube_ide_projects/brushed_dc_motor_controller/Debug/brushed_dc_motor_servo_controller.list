@@ -2176,7 +2176,7 @@ float GetVelocityAtTime()
  80016e4:	4603      	mov	r3, r0
  80016e6:	2b00      	cmp	r3, #0
  80016e8:	d011      	beq.n	800170e <GetVelocityAtTime+0x56>
-		  velocity = motionProfile.initial_velocity - motionProfile.max_acceleration * _time;
+		  velocity = motionProfile.initial_velocity + motionProfile.max_acceleration * _time;
  80016ea:	4b4d      	ldr	r3, [pc, #308]	@ (8001820 <GetVelocityAtTime+0x168>)
  80016ec:	6adc      	ldr	r4, [r3, #44]	@ 0x2c
  80016ee:	4b4c      	ldr	r3, [pc, #304]	@ (8001820 <GetVelocityAtTime+0x168>)
@@ -2189,7 +2189,7 @@ float GetVelocityAtTime()
  80016fe:	4603      	mov	r3, r0
  8001700:	4619      	mov	r1, r3
  8001702:	4620      	mov	r0, r4
- 8001704:	f7ff f9ec 	bl	8000ae0 <__aeabi_fsub>
+ 8001704:	f7ff f9ee 	bl	8000ae4 <__addsf3>
  8001708:	4603      	mov	r3, r0
  800170a:	607b      	str	r3, [r7, #4]
  800170c:	e083      	b.n	8001816 <GetVelocityAtTime+0x15e>
@@ -2293,7 +2293,7 @@ float GetVelocityAtTime()
  80017ca:	607b      	str	r3, [r7, #4]
  80017cc:	e023      	b.n	8001816 <GetVelocityAtTime+0x15e>
     else
-      velocity = motionProfile.max_velocity - (motionProfile.max_deceleration * (_time - motionProfile.time_at_max_velocity - motionProfile.time_to_max_velocity));
+      velocity = motionProfile.max_velocity + (motionProfile.max_deceleration * (_time - motionProfile.time_at_max_velocity - motionProfile.time_to_max_velocity));
  80017ce:	4b14      	ldr	r3, [pc, #80]	@ (8001820 <GetVelocityAtTime+0x168>)
  80017d0:	6a9c      	ldr	r4, [r3, #40]	@ 0x28
  80017d2:	4b13      	ldr	r3, [pc, #76]	@ (8001820 <GetVelocityAtTime+0x168>)
@@ -2319,7 +2319,7 @@ float GetVelocityAtTime()
  8001800:	4603      	mov	r3, r0
  8001802:	4619      	mov	r1, r3
  8001804:	4620      	mov	r0, r4
- 8001806:	f7ff f96b 	bl	8000ae0 <__aeabi_fsub>
+ 8001806:	f7ff f96d 	bl	8000ae4 <__addsf3>
  800180a:	4603      	mov	r3, r0
  800180c:	607b      	str	r3, [r7, #4]
  800180e:	e002      	b.n	8001816 <GetVelocityAtTime+0x15e>
@@ -2474,11 +2474,7 @@ void CalculatePID()
  800192a:	2301      	movs	r3, #1
  800192c:	2b00      	cmp	r3, #0
  800192e:	d016      	beq.n	800195e <CalculatePID+0xde>
-    // fs =  (0.1116f * motor_current_speed);
-    // fs += (0.1116f * motor_speed_1);
-    // fs += (0.7767f * filt_speed_1);
-    // motor_speed_1 = motor_current_speed;
-    // filt_speed_1 = fs;
+  {
     fs = 0.1f * motor_current_speed + (1.0f - 0.1f) * fs;
  8001930:	4b6e      	ldr	r3, [pc, #440]	@ (8001aec <CalculatePID+0x26c>)
  8001932:	681b      	ldr	r3, [r3, #0]
@@ -2500,7 +2496,6 @@ void CalculatePID()
  8001958:	461a      	mov	r2, r3
  800195a:	4b67      	ldr	r3, [pc, #412]	@ (8001af8 <CalculatePID+0x278>)
  800195c:	601a      	str	r2, [r3, #0]
-
   }
 
 
