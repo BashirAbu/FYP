@@ -504,9 +504,9 @@ int main(void)
   data.gearRatio = 3249.0f / 121.0f;
   data.encoderPulses = 500.0f;
 
-  data.kp = 1.5f;
-  data.ki = 0.5f;
-  data.kd = 0.0f;
+  data.kp = 2.33f;
+  data.ki = 0.1f;
+  data.kd = 0.00f;
   /* USER CODE END 2 */
 
   /* Infinite loop */
