@@ -346,7 +346,7 @@ void CalculatePID()
 	controlSignal = data.kp * errorValue + data.ki * integral + data.kd * derivative;
 
 	char msg[255];
-  sprintf(msg, "%d %d %d %d %d %d %d\n\0", (int)GetVelocityAtTime(), (int)fs, (int)controlSignal, (int)PulsestoDegrees(motor_current_position), (int)GetPostionAtTime(), (int)_time, (int)motionProfile.total_time);
+  sprintf(msg, "%d %d %d %d\n\0", (int)GetVelocityAtTime(), (int)fs, (int)PulsestoDegrees(motor_current_position), (int)GetPostionAtTime());
 	HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
 	prevTime = currentTime;
@@ -504,9 +504,9 @@ int main(void)
   data.gearRatio = 3249.0f / 121.0f;
   data.encoderPulses = 500.0f;
 
-  data.kp = 2.33f;
+  data.kp = 2.00f;
   data.ki = 0.1f;
-  data.kd = 0.00f;
+  data.kd = 0.1f;
   /* USER CODE END 2 */
 
   /* Infinite loop */

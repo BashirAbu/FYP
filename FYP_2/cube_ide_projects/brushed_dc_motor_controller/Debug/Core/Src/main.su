@@ -4,7 +4,7 @@
 ../Core/Src/main.c:223:7:get_current_position	80	static
 ../Core/Src/main.c:287:7:GetVelocityAtTime	24	static
 ../Core/Src/main.c:321:6:CalculateSpeed	16	static
-../Core/Src/main.c:327:6:CalculatePID	320	static
+../Core/Src/main.c:327:6:CalculatePID	288	static
 ../Core/Src/main.c:356:6:DriveMotor	8	static
 ../Core/Src/main.c:413:6:HAL_UART_RxCpltCallback	40	static
 ../Core/Src/main.c:437:6:HAL_GPIO_EXTI_Callback	24	static
