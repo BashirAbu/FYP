@@ -397,9 +397,9 @@ void DriveMotor()
 
 	//setting PWM value
 	PWM_countingDutyCycle = (uint32_t)fabs(controlSignal);
-	if(PWM_countingDutyCycle > 180)
+	if(PWM_countingDutyCycle > 205)
 	{
-		PWM_countingDutyCycle = 180;
+		PWM_countingDutyCycle = 205;
 	}
     __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
 
