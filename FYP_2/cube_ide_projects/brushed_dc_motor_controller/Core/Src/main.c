@@ -79,15 +79,6 @@ typedef struct ConfigData
 	uint8_t send;
 } ConfigData;
 
-typedef struct StatusData
-{
-	float motor_current_speed;
-	float motor_current_position;
-	float motor_current_acceleration;
-	float dummy;
-} StatusData;
-
-
 MotorDirection motorDirection = ClockWise;
 MotorDirection prevMotorDirection = none;
 
@@ -168,8 +159,8 @@ void CalculateMotionProfile()
 
 	motionProfile.max_acceleration = data.acceleration;
 	motionProfile.max_deceleration = data.deceleration;
-  motionProfile.initial_velocity = fs;
-  motionProfile.initial_position = PulsestoDegrees(motor_current_position);
+    motionProfile.initial_velocity = fs;
+    motionProfile.initial_position = PulsestoDegrees(motor_current_position);
 	motionProfile.total_distance = fabs((data.position) - (PulsestoDegrees(motor_current_position)));
 	motionProfile.max_velocity = motionProfile.dir == ClockWise? -data.speed : data.speed;
 	if(motionProfile.max_acceleration == 0.0f || motionProfile.max_deceleration == 0.0f || motionProfile.max_velocity == 0.0f)
@@ -182,18 +173,18 @@ void CalculateMotionProfile()
 	motionProfile.distance_at_max_velocity = motionProfile.total_distance - (motionProfile.distance_to_max_velocity + motionProfile.distance_to_stop);
   
 	motionProfile.time_at_max_velocity = fabs(motionProfile.distance_at_max_velocity / motionProfile.max_velocity);
-  motionProfile.total_time = motionProfile.time_at_max_velocity + motionProfile.time_to_max_velocity + motionProfile.time_to_stop;
+    motionProfile.total_time = motionProfile.time_at_max_velocity + motionProfile.time_to_max_velocity + motionProfile.time_to_stop;
 
-  motionProfile.max_deceleration *= -1;
-  if(motionProfile.dir == ClockWise)
-  {
-    motionProfile.distance_at_max_velocity *= -1;
-    motionProfile.distance_to_max_velocity *= -1;
-    motionProfile.distance_to_stop *= -1;
-    motionProfile.total_distance *= -1;
-    motionProfile.max_acceleration *= -1;
-    motionProfile.max_deceleration *= -1;
-  }
+	motionProfile.max_deceleration *= -1;
+	if(motionProfile.dir == ClockWise)
+	{
+	motionProfile.distance_at_max_velocity *= -1;
+	motionProfile.distance_to_max_velocity *= -1;
+	motionProfile.distance_to_stop *= -1;
+	motionProfile.total_distance *= -1;
+	motionProfile.max_acceleration *= -1;
+	motionProfile.max_deceleration *= -1;
+	}
 }
 
 float GetPostionAtTime()
@@ -219,70 +210,6 @@ float GetPostionAtTime()
   }
   return currentPos;
 }
-
-float get_current_position(MotionProfile* profile, float elapsed_time) {
-    float current_position = profile->initial_position;
-    float current_velocity = profile->initial_velocity;
-
-    // Acceleration phase
-    if (elapsed_time <= profile->time_to_max_velocity) {
-    	if(profile->dir == ClockWise)
-    	{
-    		current_position -= profile->initial_velocity * elapsed_time + 0.5 * profile->max_acceleration * pow(elapsed_time, 2);
-    	}
-    	else
-    	{
-    		current_position += profile->initial_velocity * elapsed_time + 0.5 * profile->max_acceleration * pow(elapsed_time, 2);
-    	}
-    }
-    // Constant velocity phase
-    else if (elapsed_time <= (profile->time_to_max_velocity + profile->time_at_max_velocity)) {
-      if(profile->dir == ClockWise)
-    	{
-        float acceleration_time = profile->time_to_max_velocity;
-        float constant_velocity_time = elapsed_time - acceleration_time;
-        current_position = profile->initial_position + (-profile->distance_to_max_velocity + profile->max_velocity * constant_velocity_time);
-      }
-      else
-      {
-        float acceleration_time = profile->time_to_max_velocity;
-        float constant_velocity_time = elapsed_time - acceleration_time;
-        current_position = profile->initial_position + (profile->distance_to_max_velocity + profile->max_velocity * constant_velocity_time);
-      }
-    }
-    // Deceleration phase
-    else if (elapsed_time <= profile->total_time) 
-    {
-    	if(profile->dir == ClockWise)
-      {
-        float acceleration_time = profile->time_to_max_velocity;
-        float constant_velocity_time = profile->time_at_max_velocity;
-        float deceleration_time = elapsed_time - (acceleration_time + constant_velocity_time);
-        current_position = -(current_position + profile->distance_to_max_velocity + profile->distance_at_max_velocity) + profile->max_velocity * deceleration_time - 0.5 * -profile->max_deceleration * pow(deceleration_time, 2);
-      }
-      else
-      {
-        float acceleration_time = profile->time_to_max_velocity;
-        float constant_velocity_time = profile->time_at_max_velocity;
-        float deceleration_time = elapsed_time - (acceleration_time + constant_velocity_time);
-        current_position += profile->distance_to_max_velocity + profile->distance_at_max_velocity + profile->max_velocity * deceleration_time - 0.5 * profile->max_deceleration * pow(deceleration_time, 2);
-      }
-    }
-    // If elapsed_time exceeds total_time, return final position
-    else {
-      if(profile->dir == ClockWise)
-      {
-        current_position = (profile->initial_position - profile->total_distance);
-      }
-      else
-      {
-        current_position = (profile->initial_position + profile->total_distance);
-      }
-    }
-
-    return current_position;
-}
-
 
 float GetVelocityAtTime()
 {
@@ -346,7 +273,7 @@ void CalculatePID()
 	controlSignal = data.kp * errorValue + data.ki * integral + data.kd * derivative;
 
 	char msg[255];
-  sprintf(msg, "%d %d %d %d\n\0", (int)GetVelocityAtTime(), (int)fs, (int)PulsestoDegrees(motor_current_position), (int)GetPostionAtTime());
+	sprintf(msg, "%d %d %d %d\n\0", (int)GetVelocityAtTime(), (int)fs, (int)PulsestoDegrees(motor_current_position), (int)GetPostionAtTime());
 	HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
 	prevTime = currentTime;
@@ -415,19 +342,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	HAL_UART_Receive_IT(&huart1, rx_buffer, 1);
 	if(rx_buffer[0] == '\n')
 	{
-    int p, s, a, d;
-    sscanf(buffer, "%d %d %d %d", &p, &s, &a, &d);
-    memset(buffer, 0, 256);
-    data.position = p;
-    data.speed = s;
-    data.acceleration = a;
-    data.deceleration = d;
+		int p, s, a, d;
+		sscanf(buffer, "%d %d %d %d", &p, &s, &a, &d);
+		memset(buffer, 0, 256);
+		data.position = p;
+		data.speed = s;
+		data.acceleration = a;
+		data.deceleration = d;
 		bufferIndex = 0;
 		_time = 0.0f;
 		integral = 0.0f;
-    controlSignal = 0.0f;
+		controlSignal = 0.0f;
 		CalculateMotionProfile();
-    return;
+		return;
 	}
 	buffer[bufferIndex] = rx_buffer[0];
 	bufferIndex++;
@@ -450,19 +377,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	  motor_current_position += (float)inc;
   }
 }
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
-{
-	if(htim == &htim3)
-	{
-		StatusData send_data = {0};
-		send_data.motor_current_position = motor_current_position;
-		send_data.motor_current_speed = motor_current_speed;
-		send_data.motor_current_acceleration= motor_current_acceleration;
-		send_data.dummy = 1212.22f;
-		//if(data.send)
-			//HAL_UART_Transmit_IT(&huart1, (uint8_t*)&send_data, sizeof(StatusData));
-	}
-}
+
 /* USER CODE END 0 */
 
 /**
