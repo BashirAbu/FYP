@@ -2857,15 +2857,15 @@ void DriveMotor()
  8001c16:	4603      	mov	r3, r0
  8001c18:	4a1e      	ldr	r2, [pc, #120]	@ (8001c94 <DriveMotor+0x1a8>)
  8001c1a:	6013      	str	r3, [r2, #0]
-	if(PWM_countingDutyCycle > 180)
+	if(PWM_countingDutyCycle > 205)
  8001c1c:	4b1d      	ldr	r3, [pc, #116]	@ (8001c94 <DriveMotor+0x1a8>)
  8001c1e:	681b      	ldr	r3, [r3, #0]
- 8001c20:	2bb4      	cmp	r3, #180	@ 0xb4
+ 8001c20:	2bcd      	cmp	r3, #205	@ 0xcd
  8001c22:	d902      	bls.n	8001c2a <DriveMotor+0x13e>
 	{
-		PWM_countingDutyCycle = 180;
+		PWM_countingDutyCycle = 205;
  8001c24:	4b1b      	ldr	r3, [pc, #108]	@ (8001c94 <DriveMotor+0x1a8>)
- 8001c26:	22b4      	movs	r2, #180	@ 0xb4
+ 8001c26:	22cd      	movs	r2, #205	@ 0xcd
  8001c28:	601a      	str	r2, [r3, #0]
 	}
     __HAL_TIM_SET_COMPARE(&htim2, PWM_CurrentChannel, PWM_countingDutyCycle);
