@@ -267,6 +267,7 @@ void CalculatePID()
 
 	errorValue = GetPostionAtTime() - PulsestoDegrees(motor_current_position);
 	//errorValue = GetVelocityAtTime() - fs;
+  //errorValue = data.position - PulsestoDegrees(motor_current_position);
 	derivative = (errorValue - prevErrorValue) / deltaTime;
 	integral = integral + errorValue * deltaTime;
 
@@ -419,7 +420,7 @@ int main(void)
   data.gearRatio = 3249.0f / 121.0f;
   data.encoderPulses = 500.0f;
 
-  data.kp = 2.00f;
+  data.kp = 5.00f;
   data.ki = 0.1f;
   data.kd = 0.1f;
   /* USER CODE END 2 */
